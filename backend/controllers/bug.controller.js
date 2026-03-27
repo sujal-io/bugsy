@@ -50,3 +50,20 @@ export const updateBug = async (req, res, next) =>{
     next(error);
   }
 }
+
+export const deleteBug = async (req, res, next) => {
+  try {
+    const bug = await Bug.findById(req.params.id);
+
+    if (!bug) {
+      return res.status(404).json({ message: "Bug not found" });
+    }
+
+    await bug.deleteOne();
+
+    return res.status(200).json({ message: "Bug deleted successfully" });
+
+  } catch (error) {
+    next(error);
+  }
+};
