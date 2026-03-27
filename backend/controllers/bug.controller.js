@@ -27,3 +27,26 @@ export const getBugs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateBug = async (req, res, next) =>{
+  try {
+
+    const {status} = req.body;
+
+    const bug = await Bug.findById(req.params.id);
+
+    if(!bug){
+      return res.status(404).json({message: "Bug not found"});
+    }
+
+    bug.status = status;
+    await bug.save();
+
+    const updatedBug = await bug.save();
+
+    return res.status(200).json(updatedBug);
+
+  } catch(error){
+    next(error);
+  }
+}
