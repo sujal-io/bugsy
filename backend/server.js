@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import bugRoutes from "./routes/bug.route.js";
+import errorHandler from "./middlewares/error.middleware.js";
 
 dotenv.config({quiet: true});
 
@@ -11,14 +13,15 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
-// middleware
+// middlewares
 app.use(cors());
 app.use(express.json());
 
-// test route
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+// routes
+app.use("/api/bugs", bugRoutes);
+
+// error middleware (always last)
+app.use(errorHandler);
 
 // start server
 app.listen(PORT, () => {
