@@ -38,6 +38,11 @@ export const updateBug = async (req, res, next) => {
       return res.status(404).json({ message: "Bug not found" });
     }
 
+    // OWNER CHECK
+    if (bug.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to update this bug" });
+    }
+
     bug.status = status;
     await bug.save();
 
@@ -57,7 +62,12 @@ export const deleteBug = async (req, res, next) => {
       return res.status(404).json({ message: "Bug not found" });
     }
 
-    await bug.deleteOne();
+    // OWNER CHECK
+    if (bug.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to delete this bug" });
+    }
+
+   await bug.deleteOne();
 
     return res.status(200).json({ message: "Bug deleted successfully" });
   } catch (error) {
