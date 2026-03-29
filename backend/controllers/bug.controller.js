@@ -10,6 +10,7 @@ export const createBug = async (req, res, next) => {
       expected,
       actual,
       priority,
+      user: req.user.id,
     });
 
     res.status(201).json(bug);
@@ -20,23 +21,21 @@ export const createBug = async (req, res, next) => {
 
 export const getBugs = async (req, res, next) => {
   try {
-    const bugs = await Bug.find();
-
+    const bugs = await Bug.find().populate("user", "username email");
     res.status(200).json(bugs);
   } catch (error) {
     next(error);
   }
 };
 
-export const updateBug = async (req, res, next) =>{
+export const updateBug = async (req, res, next) => {
   try {
-
-    const {status} = req.body;
+    const { status } = req.body;
 
     const bug = await Bug.findById(req.params.id);
 
-    if(!bug){
-      return res.status(404).json({message: "Bug not found"});
+    if (!bug) {
+      return res.status(404).json({ message: "Bug not found" });
     }
 
     bug.status = status;
@@ -45,11 +44,10 @@ export const updateBug = async (req, res, next) =>{
     const updatedBug = await bug.save();
 
     return res.status(200).json(updatedBug);
-
-  } catch(error){
+  } catch (error) {
     next(error);
   }
-}
+};
 
 export const deleteBug = async (req, res, next) => {
   try {
@@ -62,7 +60,6 @@ export const deleteBug = async (req, res, next) => {
     await bug.deleteOne();
 
     return res.status(200).json({ message: "Bug deleted successfully" });
-
   } catch (error) {
     next(error);
   }
