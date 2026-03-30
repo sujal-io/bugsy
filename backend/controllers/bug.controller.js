@@ -74,3 +74,16 @@ export const deleteBug = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getMyBugs = async (req, res, next) => {
+  try {
+    const bugs = await Bug.find({ user: req.user.id }).populate(
+      "user",
+      "username email"
+    );
+
+    return res.status(200).json(bugs);
+  } catch (error) {
+    next(error);
+  }
+};
