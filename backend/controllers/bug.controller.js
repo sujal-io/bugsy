@@ -77,29 +77,32 @@ export const deleteBug = async (req, res, next) => {
 
 export const getMyBugs = async (req, res, next) => {
   try {
-    const { status, priority, search } = req.query;
+    const { status, priority, search, page = 1, limit = 10, sort } = req.query;
 
     let filter = { user: req.user.id };
 
-    // filter by status
-    if (status) {
-      filter.status = status;
-    }
-
-    // filter by priority
-    if (priority) {
-      filter.priority = priority;
-    }
-
-    // search by title
+    // filtering
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
     if (search) {
       filter.title = { $regex: search, $options: "i" };
     }
 
-    const bugs = await Bug.find(filter).populate(
-      "user",
-      "username email"
-    );
+    // pagination
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // sorting
+    let sortOption = {};
+    if (sort === "newest") sortOption = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+
+    const bugs = await Bug.find(filter)
+      .populate("user", "username email")
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNumber);
 
     return res.status(200).json(bugs);
   } catch (error) {
