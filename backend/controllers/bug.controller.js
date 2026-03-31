@@ -77,7 +77,26 @@ export const deleteBug = async (req, res, next) => {
 
 export const getMyBugs = async (req, res, next) => {
   try {
-    const bugs = await Bug.find({ user: req.user.id }).populate(
+    const { status, priority, search } = req.query;
+
+    let filter = { user: req.user.id };
+
+    // filter by status
+    if (status) {
+      filter.status = status;
+    }
+
+    // filter by priority
+    if (priority) {
+      filter.priority = priority;
+    }
+
+    // search by title
+    if (search) {
+      filter.title = { $regex: search, $options: "i" };
+    }
+
+    const bugs = await Bug.find(filter).populate(
       "user",
       "username email"
     );
