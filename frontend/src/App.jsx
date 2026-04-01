@@ -1,11 +1,12 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Signup from "./pages/Signup";
 
 function App() {
   return (
-    <div className="bg-black text-white min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold">Bug Tracker</h1>
-      <button className="btn btn-primary">Test Button</button>
-    </div>
+    <Routes>
+      <Route path="/signup" element={<Signup />} />
+    </Routes>
   );
 }
 
