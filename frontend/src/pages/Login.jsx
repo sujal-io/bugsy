@@ -1,17 +1,35 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
+  // state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate(); // 🔥 for redirect later
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      console.log(data);
+
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -23,63 +41,42 @@ function Login() {
           BugTracker
         </Link>
 
-        <Link
-          to="/signup"
-          className="border border-gray-500 px-4 py-2 rounded-md"
-        >
+        <Link to="/signup" className="border border-gray-500 px-4 py-2 rounded-md">
           Signup
         </Link>
       </header>
 
       {/* Card */}
       <div className="bg-gray-900 p-8 rounded-lg shadow-lg w-[400px]">
-        
-        <h2 className="text-2xl font-bold text-center mb-4">
-          Welcome Back
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-4">Welcome Back</h2>
 
-        <p className="text-center text-gray-400 mb-6">
-          Login to continue 🚀
-        </p>
-
-        {/* Form */}
         <form onSubmit={handleSubmit}>
 
-          {/* Email */}
           <div className="mb-4">
-            <label className="text-gray-400">Email</label>
+            <label>Email</label>
             <input
               type="email"
-              placeholder="Enter email"
-              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
 
-          {/* Password */}
           <div className="mb-4">
-            <label className="text-gray-400">Password</label>
+            <label>Password</label>
             <input
               type="password"
-              placeholder="Enter password"
-              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
 
-          {/* Button */}
-          <button
-            type="submit"
-            className="w-full bg-orange-500 hover:bg-blue-600 py-3 rounded-md transition"
-          >
+          <button className="w-full bg-orange-500 py-3 rounded-md">
             Login
           </button>
-        </form>
 
+        </form>
       </div>
     </div>
   );
