@@ -36,14 +36,14 @@ function Login() {
         return;
       }
 
-      // 🔥 store token
+      // store token
       localStorage.setItem("token", data.token);
 
       showToast("success", "Login successful!");
 
       // redirect after login
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 1500);
 
     } catch (error) {
@@ -83,7 +83,7 @@ function Login() {
         </p>
       </div>
 
-      {/* 🔥 Toast */}
+      {/*Toast */}
       {toast.message && (
         <div className="toast toast-top toast-end">
           <div className={`alert ${toast.type === "error" ? "alert-error" : "alert-success"}`}>
