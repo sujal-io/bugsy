@@ -6,21 +6,41 @@ function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log({
-      username,
-      email,
-      password,
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setError("");
+      alert("Signup successful!");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <div className="bg-gradient-to-r from-black to-blue-950 min-h-screen text-white flex items-center justify-center">
-
       {/* Header */}
       <header className="absolute top-0 left-0 w-full flex justify-between items-center p-5">
         <Link to="/" className="text-xl font-bold text-orange-500">
@@ -37,10 +57,7 @@ function Signup() {
 
       {/* Card */}
       <div className="bg-gray-900 p-8 rounded-lg shadow-lg w-[400px]">
-        
-        <h2 className="text-2xl font-bold text-center mb-4">
-          Create Account
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-4">Create Account</h2>
 
         <p className="text-center text-gray-400 mb-6">
           Start tracking bugs efficiently 🚀
@@ -48,7 +65,6 @@ function Signup() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-
           {/* Username */}
           <div className="mb-4">
             <label className="text-gray-400">Username</label>
@@ -88,6 +104,10 @@ function Signup() {
             />
           </div>
 
+          {error && (
+            <div className="text-red-500 text-center mb-3">{error}</div>
+          )}
+
           {/* Button */}
           <button
             type="submit"
@@ -96,7 +116,6 @@ function Signup() {
             Signup
           </button>
         </form>
-
       </div>
     </div>
   );
