@@ -2,11 +2,20 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
-  // state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const navigate = useNavigate(); // 🔥 for redirect later
+  const [toast, setToast] = useState({ type: "", message: "" });
+
+  const navigate = useNavigate();
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+
+    setTimeout(() => {
+      setToast({ type: "", message: "" });
+    }, 2000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,67 +26,71 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
-      console.log(data);
+      if (!res.ok) {
+        showToast("error", data.message);
+        return;
+      }
+
+      // 🔥 store token
+      localStorage.setItem("token", data.token);
+
+      showToast("success", "Login successful!");
+
+      // redirect after login
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
 
     } catch (error) {
-      console.error(error);
+      showToast("error", "Network error");
     }
   };
 
   return (
-    <div className="bg-gradient-to-r from-black to-blue-950 min-h-screen text-white flex items-center justify-center">
+    <div className="bg-gradient-to-r from-black to-blue-950 min-h-screen flex items-center justify-center text-white">
 
-      {/* Header */}
-      <header className="absolute top-0 left-0 w-full flex justify-between items-center p-5">
-        <Link to="/" className="text-xl font-bold text-orange-500">
-          BugTracker
-        </Link>
-
-        <Link to="/signup" className="border border-gray-500 px-4 py-2 rounded-md">
-          Signup
-        </Link>
-      </header>
-
-      {/* Card */}
-      <div className="bg-gray-900 p-8 rounded-lg shadow-lg w-[400px]">
-        <h2 className="text-2xl font-bold text-center mb-4">Welcome Back</h2>
+      <div className="bg-gray-900 p-8 rounded-lg w-[400px]">
+        <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
 
         <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            className="input input-bordered w-full mb-3"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <div className="mb-4">
-            <label>Email</label>
-            <input
-              type="email"
-              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <input
+            type="password"
+            placeholder="Password"
+            className="input input-bordered w-full mb-3"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <div className="mb-4">
-            <label>Password</label>
-            <input
-              type="password"
-              className="w-full p-3 rounded-md bg-gray-800 border border-gray-700"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <button className="w-full bg-orange-500 py-3 rounded-md">
-            Login
-          </button>
-
+          <button className="btn btn-primary w-full">Login</button>
         </form>
+
+        <p className="mt-3 text-center">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-orange-400">Signup</Link>
+        </p>
       </div>
+
+      {/* 🔥 Toast */}
+      {toast.message && (
+        <div className="toast toast-top toast-end">
+          <div className={`alert ${toast.type === "error" ? "alert-error" : "alert-success"}`}>
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
