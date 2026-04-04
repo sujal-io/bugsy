@@ -2,29 +2,36 @@ import { useEffect, useState } from "react";
 import BugCard from "../components/BugCard";
 import CreateBugForm from "../components/CreateBugForm";
 import FilterBar from "../components/FilterBar";
+import Pagination from "../components/Pagination";
 
 function Dashboard() {
+  // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Filters
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    fetchBugs();
-  }, [statusFilter, priorityFilter, search]);
+  // Pagination
+  const [page, setPage] = useState(1);
 
+  // User
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // Fetch bugs
   const fetchBugs = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Build query params
       let query = "";
 
       if (statusFilter) query += `status=${statusFilter}&`;
       if (priorityFilter) query += `priority=${priorityFilter}&`;
       if (search) query += `search=${search}&`;
+
+      query += `page=${page}&limit=6`;
 
       const res = await fetch(
         `http://localhost:5000/api/bugs/my?${query}`,
@@ -44,6 +51,16 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
+  // Fetch on change
+  useEffect(() => {
+    fetchBugs();
+  }, [statusFilter, priorityFilter, search, page]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, priorityFilter, search]);
 
   // Create Bug
   const createBug = async (title, description, priority) => {
@@ -105,24 +122,32 @@ function Dashboard() {
     }
   };
 
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] text-white p-6">
-      
+
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">My Bugs</h1>
 
         <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            window.location.href = "/login";
-          }}
-          className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition"
+          onClick={handleLogout}
+          className="bg-red-500 px-4 py-2 rounded hover:bg-red-600"
         >
           Logout
         </button>
       </div>
+
+      {/* Welcome */}
+      <p className="text-gray-300 mb-6">
+        Welcome back, {user?.username}
+      </p>
 
       {/* Filters */}
       <FilterBar
@@ -134,14 +159,16 @@ function Dashboard() {
         setPriorityFilter={setPriorityFilter}
       />
 
-      {/* Create Bug Form */}
+      {/* Create Bug */}
       <CreateBugForm createBug={createBug} />
 
       {/* Bug List */}
       {loading ? (
         <p>Loading...</p>
       ) : bugs.length === 0 ? (
-        <p>No bugs found</p>
+        <p className="text-center text-gray-400 mt-10">
+          No bugs found
+        </p>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {bugs.map((bug) => (
@@ -154,6 +181,10 @@ function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* Pagination */}
+      <Pagination page={page} setPage={setPage} />
+
     </div>
   );
 }
