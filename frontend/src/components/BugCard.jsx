@@ -38,7 +38,7 @@ function BugCard({ bug, deleteBug, updateBug }) {
         >
           <option className="text-black">Open</option>
           <option className="text-black">In Progress</option>
-          <option className="text-black">Closed</option>
+          <option className="text-black">Fixed</option>
         </select>
 
         <span className="absolute right-3 top-2 text-gray-300 pointer-events-none text-sm">

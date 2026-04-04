@@ -1,26 +1,42 @@
 import { useEffect, useState } from "react";
 import BugCard from "../components/BugCard";
 import CreateBugForm from "../components/CreateBugForm";
+import FilterBar from "../components/FilterBar";
 
 function Dashboard() {
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     fetchBugs();
-  }, []);
+  }, [statusFilter, priorityFilter, search]);
 
   const fetchBugs = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/api/bugs/my", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Build query params
+      let query = "";
+
+      if (statusFilter) query += `status=${statusFilter}&`;
+      if (priorityFilter) query += `priority=${priorityFilter}&`;
+      if (search) query += `search=${search}&`;
+
+      const res = await fetch(
+        `http://localhost:5000/api/bugs/my?${query}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
+
       setBugs(data);
       setLoading(false);
     } catch (error) {
@@ -91,12 +107,37 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] text-white p-6">
-      <h1 className="text-2xl font-bold mb-6">My Bugs</h1>
+      
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">My Bugs</h1>
 
-      {/* Form */}
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/login";
+          }}
+          className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Filters */}
+      <FilterBar
+        search={search}
+        setSearch={setSearch}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        priorityFilter={priorityFilter}
+        setPriorityFilter={setPriorityFilter}
+      />
+
+      {/* Create Bug Form */}
       <CreateBugForm createBug={createBug} />
 
-      {/* List */}
+      {/* Bug List */}
       {loading ? (
         <p>Loading...</p>
       ) : bugs.length === 0 ? (
