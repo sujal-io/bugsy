@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import bugRoutes from "./routes/bug.route.js";
 import authRoutes from "./routes/auth.route.js";
+import teamRoutes from "./routes/team.route.js";
 import errorHandler from "./middlewares/error.middleware.js";
 
 dotenv.config({quiet: true});
@@ -21,6 +22,7 @@ app.use(express.json());
 // routes
 app.use("/api/bugs", bugRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/team", teamRoutes);
 
 // error middleware (always last)
 app.use(errorHandler);
