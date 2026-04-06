@@ -1,7 +1,18 @@
 import Bug from "../models/bug.model.js";
+import Team from "../models/team.model.js";
+import User from "../models/user.model.js";
 export const createBug = async (req, res, next) => {
   try {
     const { title, description, steps, expected, actual, priority } = req.body;
+
+    // get user
+    const user = await User.findById(req.user.id);
+
+    if (!user.team) {
+      return res.status(400).json({
+        message: "User is not part of any team",
+      });
+    }
 
     const bug = await Bug.create({
       title,
@@ -11,6 +22,7 @@ export const createBug = async (req, res, next) => {
       actual,
       priority,
       user: req.user.id,
+      team: user.team,
     });
 
     res.status(201).json(bug);
@@ -38,12 +50,20 @@ export const updateBug = async (req, res, next) => {
       return res.status(404).json({ message: "Bug not found" });
     }
 
+    const user = await User.findById(req.user.id);
+
     // OWNER CHECK
     if (bug.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to update this bug" });
     }
 
     bug.status = status;
+
+    if (status === "Fixed") {
+      bug.solution = solution;
+      bug.updatedBy = req.user.id;
+    }
+
     await bug.save();
 
     const updatedBug = await bug.save();
@@ -62,11 +82,15 @@ export const deleteBug = async (req, res, next) => {
       return res.status(404).json({ message: "Bug not found" });
     }
 
-    // OWNER CHECK
-    if (bug.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized to delete this bug" });
-    }
+    const user = await User.findById(req.user.id);
+    const team = await Team.findById(user.team);
 
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({
+        message: "Only creator or admin can delete this bug",
+      });
+    }
+    
    await bug.deleteOne();
 
     return res.status(200).json({ message: "Bug deleted successfully" });
@@ -107,5 +131,21 @@ export const getMyBugs = async (req, res, next) => {
     return res.status(200).json(bugs);
   } catch (error) {
     next(error);
+  }
+};
+
+export const getTeamBugs = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    const bugs = await Bug.find({ team: user.team })
+      .populate("user", "username")
+      .populate("updatedBy", "username")
+      .sort({ createdAt: -1 });
+
+    res.json(bugs);
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 };
