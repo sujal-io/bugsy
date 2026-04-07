@@ -38,6 +38,7 @@ function Login() {
 
       // store token
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       showToast("success", "Login successful!");
 
