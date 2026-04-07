@@ -42,7 +42,7 @@ export const getBugs = async (req, res, next) => {
 
 export const updateBug = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, solution, title, description } = req.body;
 
     const bug = await Bug.findById(req.params.id);
 
@@ -52,19 +52,40 @@ export const updateBug = async (req, res, next) => {
 
     const user = await User.findById(req.user.id);
 
-    // OWNER CHECK
-    if (bug.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized to update this bug" });
+    // TEAM CHECK
+    if (bug.team.toString() !== user.team.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this bug" });
     }
 
     bug.status = status;
 
-    if (status === "Fixed") {
-      bug.solution = solution;
-      bug.updatedBy = req.user.id;
+    if (status) {
+      bug.status = status;
+
+      if (status === "Fixed") {
+        if (!solution || solution.trim() === "") {
+          return res
+            .status(400)
+            .json({ message: "Solution is required while fixing a bug" });
+        }
+
+        bug.solution = solution;
+        bug.updatedBy = req.user.id;
+      }
     }
 
-    await bug.save();
+    if (title || description) {
+      if (bug.user.toString() !== req.user.id) {
+        return res.status(403).json({
+          message: "Only creator can edit bug details",
+        });
+      }
+
+      if (title) bug.title = title;
+      if (description) bug.description = description;
+    }
 
     const updatedBug = await bug.save();
 
@@ -90,8 +111,8 @@ export const deleteBug = async (req, res, next) => {
         message: "Only creator or admin can delete this bug",
       });
     }
-    
-   await bug.deleteOne();
+
+    await bug.deleteOne();
 
     return res.status(200).json({ message: "Bug deleted successfully" });
   } catch (error) {
@@ -144,7 +165,6 @@ export const getTeamBugs = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json(bugs);
-
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
