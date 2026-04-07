@@ -46,7 +46,7 @@ function Login() {
         navigate("/dashboard");
       }, 1500);
 
-    } catch (error) {
+    } catch {
       showToast("error", "Network error");
     }
   };

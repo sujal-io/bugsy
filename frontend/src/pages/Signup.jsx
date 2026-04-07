@@ -44,7 +44,7 @@ function Signup() {
         navigate("/login");
       }, 1500);
 
-    } catch (error) {
+    } catch {
       showToast("error", "Something went wrong");
     }
   };
