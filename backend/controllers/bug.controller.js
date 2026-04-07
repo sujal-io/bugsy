@@ -52,11 +52,29 @@ export const updateBug = async (req, res, next) => {
 
     const user = await User.findById(req.user.id);
 
-    // TEAM CHECK
-    if (bug.team.toString() !== user.team.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this bug" });
+    const isCreator = String(bug.user) === String(req.user.id);
+
+    // TEAM CHECK (legacy-safe)
+    // If a legacy bug somehow has no team, only the creator can update it.
+    if (!bug?.team) {
+      if (!isCreator) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to update this bug" });
+      }
+      // Auto-migrate legacy bug to the user's team (required by schema)
+      if (!user?.team) {
+        return res.status(400).json({
+          message: "User is not part of any team, cannot update legacy bug",
+        });
+      }
+      bug.team = user.team;
+    } else {
+      if (!user?.team || String(bug.team) !== String(user.team)) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to update this bug" });
+      }
     }
 
     bug.status = status;
@@ -77,7 +95,7 @@ export const updateBug = async (req, res, next) => {
     }
 
     if (title || description) {
-      if (bug.user.toString() !== req.user.id) {
+      if (!bug.user || String(bug.user) !== String(req.user.id)) {
         return res.status(403).json({
           message: "Only creator can edit bug details",
         });
@@ -105,6 +123,25 @@ export const deleteBug = async (req, res, next) => {
 
     const user = await User.findById(req.user.id);
     const team = await Team.findById(user.team);
+
+    const isCreator = String(bug.user) === String(req.user.id);
+    const isAdmin = String(team?.admin) === String(req.user.id);
+
+    // TEAM CHECK (legacy-safe)
+    // If a legacy bug somehow has no team, only the creator can delete it.
+    if (!bug?.team) {
+      if (!isCreator) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to delete this bug" });
+      }
+    } else {
+      if (!user?.team || String(bug.team) !== String(user.team)) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to delete this bug" });
+      }
+    }
 
     if (!isCreator && !isAdmin) {
       return res.status(403).json({
@@ -158,6 +195,10 @@ export const getMyBugs = async (req, res, next) => {
 export const getTeamBugs = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+
+    if (!user?.team) {
+      return res.status(400).json({ message: "User is not part of any team" });
+    }
 
     const bugs = await Bug.find({ team: user.team })
       .populate("user", "username")

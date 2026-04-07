@@ -20,10 +20,22 @@ function Dashboard() {
   // User
   const user = JSON.parse(localStorage.getItem("user"));
 
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   // Fetch bugs
   const fetchBugs = async () => {
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        handleLogout();
+        return;
+      }
 
       let query = "";
 
@@ -33,8 +45,11 @@ function Dashboard() {
 
       query += `page=${page}&limit=6`;
 
+      const API_BASE_URL =
+        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
+
       const res = await fetch(
-        `http://localhost:5000/api/bugs/my?${query}`,
+        `${API_BASE_URL}/api/bugs/my?${query}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -42,12 +57,23 @@ function Dashboard() {
         }
       );
 
+      // Handle unauthorized
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
+
       const data = await res.json();
 
-      setBugs(data);
+      console.log("API DATA:", data); // Debug
+
+      // Ensure array (API currently returns an array, but allow { bugs: [] } too)
+      const nextBugs = Array.isArray(data) ? data : data?.bugs;
+      setBugs(Array.isArray(nextBugs) ? nextBugs : []);
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("Fetch bugs error:", error);
+      setBugs([]);
       setLoading(false);
     }
   };
@@ -67,7 +93,10 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/api/bugs", {
+      const API_BASE_URL =
+        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_BASE_URL}/api/bugs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +109,7 @@ function Dashboard() {
 
       fetchBugs();
     } catch (error) {
-      console.error(error);
+      console.error("Create bug error:", error);
     }
   };
 
@@ -89,44 +118,55 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      await fetch(`http://localhost:5000/api/bugs/${id}`, {
+      const API_BASE_URL =
+        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_BASE_URL}/api/bugs/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Delete failed");
+      }
+
       fetchBugs();
     } catch (error) {
-      console.error(error);
+      console.error("Delete bug error:", error);
+      alert(error?.message || "Delete failed");
     }
   };
 
-  // Update Status
-  const updateBug = async (id, status) => {
+  // Update Bug
+  const updateBug = async (id, status, solution) => {
     try {
       const token = localStorage.getItem("token");
 
-      await fetch(`http://localhost:5000/api/bugs/${id}`, {
+      const API_BASE_URL =
+        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_BASE_URL}/api/bugs/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, solution }),
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Update failed");
+      }
 
       fetchBugs();
     } catch (error) {
-      console.error(error);
+      console.error("Update bug error:", error);
+      alert(error?.message || "Update failed");
     }
-  };
-
-  // Logout
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
   };
 
   return (
