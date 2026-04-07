@@ -91,3 +91,26 @@ export const joinTeam = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getMyTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user?.team) {
+      return res.status(404).json({ message: "User is not part of any team" });
+    }
+
+    const populatedTeam = await Team.findById(user.team)
+      .populate("admin", "username email")
+      .populate("members", "username email");
+
+    if (!populatedTeam) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    return res.status(200).json({ team: populatedTeam });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
