@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BugCard from "../components/BugCard";
 import CreateBugForm from "../components/CreateBugForm";
 import FilterBar from "../components/FilterBar";
@@ -8,6 +8,7 @@ function Dashboard() {
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [scope, setScope] = useState("my"); // "my" | "team"
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
@@ -28,7 +29,7 @@ function Dashboard() {
   };
 
   // Fetch bugs
-  const fetchBugs = async () => {
+  const fetchBugs = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
 
@@ -48,8 +49,10 @@ function Dashboard() {
       const API_BASE_URL =
         import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
 
+      const endpoint = scope === "team" ? "team" : "my";
+
       const res = await fetch(
-        `${API_BASE_URL}/api/bugs/my?${query}`,
+        `${API_BASE_URL}/api/bugs/${endpoint}?${query}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,17 +79,17 @@ function Dashboard() {
       setBugs([]);
       setLoading(false);
     }
-  };
+  }, [scope, statusFilter, priorityFilter, search, page]);
 
   // Fetch on change
   useEffect(() => {
     fetchBugs();
-  }, [statusFilter, priorityFilter, search, page]);
+  }, [fetchBugs]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, priorityFilter, search]);
+  }, [scope, statusFilter, priorityFilter, search]);
 
   // Create Bug
   const createBug = async (title, description, priority) => {
@@ -174,7 +177,9 @@ function Dashboard() {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">My Bugs</h1>
+        <h1 className="text-2xl font-bold">
+          {scope === "team" ? "Team Bugs" : "My Bugs"}
+        </h1>
 
         <button
           onClick={handleLogout}
@@ -182,6 +187,28 @@ function Dashboard() {
         >
           Logout
         </button>
+      </div>
+
+      {/* Scope tabs */}
+      <div className="mb-4">
+        <div role="tablist" className="tabs tabs-boxed bg-white/10">
+          <button
+            role="tab"
+            type="button"
+            className={`tab ${scope === "my" ? "tab-active" : ""}`}
+            onClick={() => setScope("my")}
+          >
+            My Bugs
+          </button>
+          <button
+            role="tab"
+            type="button"
+            className={`tab ${scope === "team" ? "tab-active" : ""}`}
+            onClick={() => setScope("team")}
+          >
+            Team Bugs
+          </button>
+        </div>
       </div>
 
       {/* Welcome */}
