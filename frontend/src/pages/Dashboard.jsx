@@ -3,12 +3,15 @@ import BugCard from "../components/BugCard";
 import CreateBugForm from "../components/CreateBugForm";
 import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
+import TeamGate from "../components/TeamGate";
+import TeamPanel from "../components/TeamPanel";
 
 function Dashboard() {
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState("my"); // "my" | "team"
+  const [team, setTeam] = useState(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
@@ -35,6 +38,13 @@ function Dashboard() {
 
       if (!token) {
         handleLogout();
+        return;
+      }
+
+      // If user has no team, skip bug fetch (CreateBug requires a team)
+      if (!user?.team) {
+        setBugs([]);
+        setLoading(false);
         return;
       }
 
@@ -79,12 +89,46 @@ function Dashboard() {
       setBugs([]);
       setLoading(false);
     }
-  }, [scope, statusFilter, priorityFilter, search, page]);
+  }, [user?.team, scope, statusFilter, priorityFilter, search, page]);
+
+  const fetchTeam = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      if (!user?.team) {
+        setTeam(null);
+        return;
+      }
+
+      const API_BASE_URL =
+        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_BASE_URL}/api/team/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setTeam(null);
+        return;
+      }
+
+      setTeam(data?.team || null);
+    } catch {
+      setTeam(null);
+    }
+  }, [user?.team]);
 
   // Fetch on change
   useEffect(() => {
     fetchBugs();
   }, [fetchBugs]);
+
+  useEffect(() => {
+    fetchTeam();
+  }, [fetchTeam]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -216,6 +260,28 @@ function Dashboard() {
         Welcome back, {user?.username}
       </p>
 
+      {/* No-team gate */}
+      {!user?.team ? (
+        <div className="mt-4">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-1">You’re not in a team yet</h2>
+            <p className="text-gray-300 text-sm">
+              Create a team or join one with an invite code to start tracking bugs.
+            </p>
+          </div>
+
+          <TeamGate
+            onTeamUpdated={(t) => {
+              setTeam(t);
+              window.location.reload();
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Team info */}
+          <TeamPanel team={team} />
+
       {/* Filters */}
       <FilterBar
         search={search}
@@ -251,6 +317,9 @@ function Dashboard() {
 
       {/* Pagination */}
       <Pagination page={page} setPage={setPage} />
+
+        </>
+      )}
 
     </div>
   );
