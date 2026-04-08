@@ -6,6 +6,7 @@ import Pagination from "../components/Pagination";
 import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
 import { useToast } from "../components/toast.context";
+import Navbar from "../components/Navbar";
 
 function Dashboard() {
   // Main data
@@ -248,19 +249,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] text-white p-6">
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">
-          {scope === "team" ? "Team Bugs" : "My Bugs"}
-        </h1>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 px-4 py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </div>
+      <Navbar />
 
       {/* Scope tabs */}
       <div className="mb-4">
