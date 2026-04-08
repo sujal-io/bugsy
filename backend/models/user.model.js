@@ -24,6 +24,21 @@ const userSchema = new mongoose.Schema(
       ref: "Team",
       default: null,
     },
+
+    // Multi-team membership (new)
+    teams: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
+
+    // Current workspace/team (new)
+    activeTeam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null,
+    },
   },
   { timestamps: true },
 );

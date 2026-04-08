@@ -5,14 +5,8 @@ export const createTeam = async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Check if user already in a team
     const user = await User.findById(req.user.id);
-
-    if (user.team) {
-      return res.status(400).json({
-        message: "User already in a team",
-      });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Generate invite code
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -25,7 +19,13 @@ export const createTeam = async (req, res) => {
       inviteCode,
     });
 
-    // Assign team to user
+    // Add membership + set active team
+    user.teams = Array.isArray(user.teams) ? user.teams : [];
+    if (!user.teams.some((t) => String(t) === String(team._id))) {
+      user.teams.push(team._id);
+    }
+    user.activeTeam = team._id;
+    // Back-compat
     user.team = team._id;
     await user.save();
 
@@ -37,6 +37,12 @@ export const createTeam = async (req, res) => {
     res.status(201).json({
       message: "Team created successfully",
       team: populatedTeam,
+      user: {
+        id: user._id,
+        teams: user.teams,
+        activeTeam: user.activeTeam,
+        team: user.team,
+      },
     });
 
   } catch (error) {
@@ -51,13 +57,7 @@ export const joinTeam = async (req, res) => {
 
     // find user
     const user = await User.findById(req.user.id);
-
-    // check if already in a team
-    if (user.team) {
-      return res.status(400).json({
-        message: "User already in a team",
-      });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // find team by invite code
     const team = await Team.findOne({ inviteCode });
@@ -69,10 +69,18 @@ export const joinTeam = async (req, res) => {
     }
 
     // add user to team members
-    team.members.push(req.user.id);
+    if (!team.members.some((m) => String(m) === String(req.user.id))) {
+      team.members.push(req.user.id);
+    }
     await team.save();
 
-    // assign team to user
+    // assign membership + set active team
+    user.teams = Array.isArray(user.teams) ? user.teams : [];
+    if (!user.teams.some((t) => String(t) === String(team._id))) {
+      user.teams.push(team._id);
+    }
+    user.activeTeam = team._id;
+    // Back-compat
     user.team = team._id;
     await user.save();
 
@@ -84,6 +92,12 @@ export const joinTeam = async (req, res) => {
     res.status(200).json({
       message: "Joined team successfully",
       team: populatedTeam,
+      user: {
+        id: user._id,
+        teams: user.teams,
+        activeTeam: user.activeTeam,
+        team: user.team,
+      },
     });
 
   } catch (error) {
@@ -96,11 +110,12 @@ export const getMyTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-    if (!user?.team) {
+    const teamId = user?.activeTeam || user?.team;
+    if (!teamId) {
       return res.status(404).json({ message: "User is not part of any team" });
     }
 
-    const populatedTeam = await Team.findById(user.team)
+    const populatedTeam = await Team.findById(teamId)
       .populate("admin", "username email")
       .populate("members", "username email");
 
@@ -109,6 +124,69 @@ export const getMyTeam = async (req, res) => {
     }
 
     return res.status(200).json({ team: populatedTeam });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getMyTeams = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const teamIds = Array.isArray(user.teams)
+      ? user.teams
+      : user.team
+        ? [user.team]
+        : [];
+
+    const teams = await Team.find({ _id: { $in: teamIds } })
+      .populate("admin", "username email")
+      .populate("members", "username email");
+
+    return res.status(200).json({
+      teams,
+      activeTeam: user.activeTeam || user.team || null,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const setActiveTeam = async (req, res) => {
+  try {
+    const { teamId } = req.body;
+    if (!teamId) return res.status(400).json({ message: "teamId is required" });
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const memberships = Array.isArray(user.teams)
+      ? user.teams.map(String)
+      : user.team
+        ? [String(user.team)]
+        : [];
+
+    if (!memberships.includes(String(teamId))) {
+      return res.status(403).json({ message: "Not a member of this team" });
+    }
+
+    user.activeTeam = teamId;
+    // Back-compat
+    user.team = teamId;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Active team updated",
+      user: {
+        id: user._id,
+        teams: user.teams,
+        activeTeam: user.activeTeam,
+        team: user.team,
+      },
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });

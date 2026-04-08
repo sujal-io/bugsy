@@ -8,7 +8,8 @@ export const createBug = async (req, res, next) => {
     // get user
     const user = await User.findById(req.user.id);
 
-    if (!user.team) {
+    const teamId = user?.activeTeam || user?.team;
+    if (!teamId) {
       return res.status(400).json({
         message: "User is not part of any team",
       });
@@ -22,7 +23,7 @@ export const createBug = async (req, res, next) => {
       actual,
       priority,
       user: req.user.id,
-      team: user.team,
+      team: teamId,
     });
 
     res.status(201).json(bug);
@@ -51,6 +52,7 @@ export const updateBug = async (req, res, next) => {
     }
 
     const user = await User.findById(req.user.id);
+    const userTeamId = user?.activeTeam || user?.team;
 
     const isCreator = String(bug.user) === String(req.user.id);
 
@@ -63,14 +65,14 @@ export const updateBug = async (req, res, next) => {
           .json({ message: "Not authorized to update this bug" });
       }
       // Auto-migrate legacy bug to the user's team (required by schema)
-      if (!user?.team) {
+      if (!userTeamId) {
         return res.status(400).json({
           message: "User is not part of any team, cannot update legacy bug",
         });
       }
-      bug.team = user.team;
+      bug.team = userTeamId;
     } else {
-      if (!user?.team || String(bug.team) !== String(user.team)) {
+      if (!userTeamId || String(bug.team) !== String(userTeamId)) {
         return res
           .status(403)
           .json({ message: "Not authorized to update this bug" });
@@ -122,7 +124,8 @@ export const deleteBug = async (req, res, next) => {
     }
 
     const user = await User.findById(req.user.id);
-    const team = await Team.findById(user.team);
+    const userTeamId = user?.activeTeam || user?.team;
+    const team = userTeamId ? await Team.findById(userTeamId) : null;
 
     const isCreator = String(bug.user) === String(req.user.id);
     const isAdmin = String(team?.admin) === String(req.user.id);
@@ -136,7 +139,7 @@ export const deleteBug = async (req, res, next) => {
           .json({ message: "Not authorized to delete this bug" });
       }
     } else {
-      if (!user?.team || String(bug.team) !== String(user.team)) {
+      if (!userTeamId || String(bug.team) !== String(userTeamId)) {
         return res
           .status(403)
           .json({ message: "Not authorized to delete this bug" });
@@ -208,11 +211,12 @@ export const getTeamBugs = async (req, res, next) => {
     const { status, priority, search, page = 1, limit = 10, sort } = req.query;
     const user = await User.findById(req.user.id);
 
-    if (!user?.team) {
+    const teamId = user?.activeTeam || user?.team;
+    if (!teamId) {
       return res.status(400).json({ message: "User is not part of any team" });
     }
 
-    const filter = { team: user.team };
+    const filter = { team: teamId };
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
     if (search) filter.title = { $regex: search, $options: "i" };
