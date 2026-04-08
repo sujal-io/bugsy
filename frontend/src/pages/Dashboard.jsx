@@ -14,6 +14,7 @@ function Dashboard() {
   const [scope, setScope] = useState("my"); // "my" | "team"
   const [team, setTeam] = useState(null);
   const [bugsError, setBugsError] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
 
   const toast = useToast();
 
@@ -50,6 +51,7 @@ function Dashboard() {
       // If user has no team, skip bug fetch (CreateBug requires a team)
       if (!user?.team) {
         setBugs([]);
+        setTotalPages(1);
         setLoading(false);
         return;
       }
@@ -86,6 +88,7 @@ function Dashboard() {
       if (!res.ok) {
         const msg = data?.message || "Failed to fetch bugs";
         setBugs([]);
+        setTotalPages(1);
         setBugsError(msg);
         setLoading(false);
         return;
@@ -94,10 +97,16 @@ function Dashboard() {
       // Ensure array (API currently returns an array, but allow { bugs: [] } too)
       const nextBugs = Array.isArray(data) ? data : data?.bugs;
       setBugs(Array.isArray(nextBugs) ? nextBugs : []);
+      setTotalPages(
+        typeof data?.totalPages === "number" && data.totalPages > 0
+          ? data.totalPages
+          : 1
+      );
       setLoading(false);
     } catch (error) {
       console.error("Fetch bugs error:", error);
       setBugs([]);
+      setTotalPages(1);
       setBugsError("Network error while fetching bugs");
       setLoading(false);
     }
@@ -357,7 +366,7 @@ function Dashboard() {
       )}
 
       {/* Pagination */}
-      <Pagination page={page} setPage={setPage} />
+      <Pagination page={page} setPage={setPage} totalPages={totalPages} />
 
         </>
       )}

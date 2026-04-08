@@ -1,4 +1,4 @@
-function Pagination({ page, setPage }) {
+function Pagination({ page, setPage, totalPages = 1 }) {
   return (
     <div className="flex justify-center mt-6 gap-3">
 
@@ -13,12 +13,13 @@ function Pagination({ page, setPage }) {
 
       {/* Page Number */}
       <span className="px-4 py-2">
-        Page {page}
+        Page {page} / {totalPages}
       </span>
 
       {/* Next Button */}
       <button
         className="btn btn-sm"
+        disabled={page >= totalPages}
         onClick={() => setPage(page + 1)}
       >
         Next
