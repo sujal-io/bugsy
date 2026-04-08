@@ -7,6 +7,7 @@ import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
 import { useToast } from "../components/toast.context";
 import Navbar from "../components/Navbar";
+import { apiRequest } from "../lib/apiClient";
 
 function Dashboard() {
   // Main data
@@ -42,9 +43,7 @@ function Dashboard() {
     try {
       setLoading(true);
       setBugsError("");
-      const token = localStorage.getItem("token");
-
-      if (!token) {
+      if (!localStorage.getItem("token")) {
         handleLogout();
         return;
       }
@@ -65,34 +64,17 @@ function Dashboard() {
 
       query += `page=${page}&limit=6`;
 
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
       const endpoint = scope === "team" ? "team" : "my";
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/bugs/${endpoint}?${query}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      let data;
+      try {
+        data = await apiRequest(`/api/bugs/${endpoint}?${query}`);
+      } catch (err) {
+        if (err?.status === 401) {
+          handleLogout();
+          return;
         }
-      );
-
-      // Handle unauthorized
-      if (res.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg = data?.message || "Failed to fetch bugs";
-        setBugs([]);
-        setTotalPages(1);
-        setBugsError(msg);
-        setLoading(false);
-        return;
+        throw err;
       }
 
       // Ensure array (API currently returns an array, but allow { bugs: [] } too)
@@ -108,35 +90,19 @@ function Dashboard() {
       console.error("Fetch bugs error:", error);
       setBugs([]);
       setTotalPages(1);
-      setBugsError("Network error while fetching bugs");
+      setBugsError(error?.message || "Network error while fetching bugs");
       setLoading(false);
     }
   }, [user?.team, scope, statusFilter, priorityFilter, search, page]);
 
   const fetchTeam = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!localStorage.getItem("token")) return;
       if (!user?.team) {
         setTeam(null);
         return;
       }
-
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/team/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setTeam(null);
-        return;
-      }
-
+      const data = await apiRequest("/api/team/me");
       setTeam(data?.team || null);
     } catch {
       setTeam(null);
@@ -160,53 +126,23 @@ function Dashboard() {
   // Create Bug
   const createBug = async (title, description, priority) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/bugs`, {
+      await apiRequest("/api/bugs", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description, priority }),
+        body: { title, description, priority },
       });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err?.message || "Create bug failed");
-        return;
-      }
 
       fetchBugs();
       toast.success("Bug created");
     } catch (error) {
       console.error("Create bug error:", error);
-      toast.error("Create bug failed");
+      toast.error(error?.message || "Create bug failed");
     }
   };
 
   // Delete Bug
   const deleteBug = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/bugs/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.message || "Delete failed");
-      }
+      await apiRequest(`/api/bugs/${id}`, { method: "DELETE" });
 
       fetchBugs();
       toast.success("Bug deleted");
@@ -219,24 +155,10 @@ function Dashboard() {
   // Update Bug
   const updateBug = async (id, status, solution) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/bugs/${id}`, {
+      await apiRequest(`/api/bugs/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status, solution }),
+        body: { status, solution },
       });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.message || "Update failed");
-      }
 
       fetchBugs();
       toast.success("Bug updated");

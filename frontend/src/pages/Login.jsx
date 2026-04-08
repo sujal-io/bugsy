@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BugsyLogo from "../components/BugsyLogo";
 import { useToast } from "../components/toast.context";
+import { apiRequest } from "../lib/apiClient";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -14,21 +15,11 @@ function Login() {
     e.preventDefault();
 
     try {
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const data = await apiRequest("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        auth: false,
+        body: { email, password },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Login failed");
-        return;
-      }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -36,8 +27,8 @@ function Login() {
       toast.success("Login successful!");
 
       setTimeout(() => navigate("/dashboard"), 1500);
-    } catch {
-      toast.error("Network error");
+    } catch (err) {
+      toast.error(err?.message || "Network error");
     }
   };
 
