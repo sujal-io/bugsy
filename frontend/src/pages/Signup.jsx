@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BugsyLogo from "../components/BugsyLogo";
 import { useToast } from "../components/toast.context";
+import { apiRequest } from "../lib/apiClient";
 
 function Signup() {
   const [username, setUsername] = useState("");
@@ -15,27 +16,17 @@ function Signup() {
     e.preventDefault();
 
     try {
-      const API_BASE_URL =
-        import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      await apiRequest("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        auth: false,
+        body: { username, email, password },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Signup failed");
-        return;
-      }
 
       toast.success("Signup successful!");
 
       setTimeout(() => navigate("/login"), 1500);
-    } catch {
-      toast.error("Something went wrong");
+    } catch (err) {
+      toast.error(err?.message || "Something went wrong");
     }
   };
 

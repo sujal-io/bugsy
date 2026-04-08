@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useToast } from "./toast.context";
+import { apiRequest } from "../lib/apiClient";
 
 function TeamGate({ onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-
-  const API_BASE_URL =
-    import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
 
   const updateStoredUserTeam = (teamId) => {
     const stored = localStorage.getItem("user");
@@ -30,18 +28,10 @@ function TeamGate({ onTeamUpdated }) {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE_URL}/api/team/create`, {
+      const data = await apiRequest("/api/team/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: teamName.trim() }),
+        body: { name: teamName.trim() },
       });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Create team failed");
 
       updateStoredUserTeam(data?.team?._id);
       onTeamUpdated?.(data?.team);
@@ -63,18 +53,10 @@ function TeamGate({ onTeamUpdated }) {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE_URL}/api/team/join`, {
+      const data = await apiRequest("/api/team/join", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
+        body: { inviteCode: inviteCode.trim().toUpperCase() },
       });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Join team failed");
 
       updateStoredUserTeam(data?.team?._id);
       onTeamUpdated?.(data?.team);
