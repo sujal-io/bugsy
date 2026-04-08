@@ -5,6 +5,7 @@ import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
 import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
+import { useToast } from "../components/toast.context";
 
 function Dashboard() {
   // Main data
@@ -12,6 +13,9 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState("my"); // "my" | "team"
   const [team, setTeam] = useState(null);
+  const [bugsError, setBugsError] = useState("");
+
+  const toast = useToast();
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
@@ -34,6 +38,8 @@ function Dashboard() {
   // Fetch bugs
   const fetchBugs = useCallback(async () => {
     try {
+      setLoading(true);
+      setBugsError("");
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -76,9 +82,14 @@ function Dashboard() {
         return;
       }
 
-      const data = await res.json();
-
-      console.log("API DATA:", data); // Debug
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = data?.message || "Failed to fetch bugs";
+        setBugs([]);
+        setBugsError(msg);
+        setLoading(false);
+        return;
+      }
 
       // Ensure array (API currently returns an array, but allow { bugs: [] } too)
       const nextBugs = Array.isArray(data) ? data : data?.bugs;
@@ -87,6 +98,7 @@ function Dashboard() {
     } catch (error) {
       console.error("Fetch bugs error:", error);
       setBugs([]);
+      setBugsError("Network error while fetching bugs");
       setLoading(false);
     }
   }, [user?.team, scope, statusFilter, priorityFilter, search, page]);
@@ -152,11 +164,17 @@ function Dashboard() {
         body: JSON.stringify({ title, description, priority }),
       });
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.message || "Create bug failed");
+        return;
+      }
 
       fetchBugs();
+      toast.success("Bug created");
     } catch (error) {
       console.error("Create bug error:", error);
+      toast.error("Create bug failed");
     }
   };
 
@@ -181,9 +199,10 @@ function Dashboard() {
       }
 
       fetchBugs();
+      toast.success("Bug deleted");
     } catch (error) {
       console.error("Delete bug error:", error);
-      alert(error?.message || "Delete failed");
+      toast.error(error?.message || "Delete failed");
     }
   };
 
@@ -210,9 +229,10 @@ function Dashboard() {
       }
 
       fetchBugs();
+      toast.success("Bug updated");
     } catch (error) {
       console.error("Update bug error:", error);
-      alert(error?.message || "Update failed");
+      toast.error(error?.message || "Update failed");
     }
   };
 
@@ -297,7 +317,28 @@ function Dashboard() {
 
       {/* Bug List */}
       {loading ? (
-        <p>Loading...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white/10 border border-white/20 rounded-xl p-5"
+            >
+              <div className="skeleton h-5 w-3/4 mb-3 bg-white/10" />
+              <div className="skeleton h-3 w-full mb-2 bg-white/10" />
+              <div className="skeleton h-3 w-5/6 mb-6 bg-white/10" />
+              <div className="flex gap-2">
+                <div className="skeleton h-6 w-20 bg-white/10" />
+                <div className="skeleton h-6 w-20 bg-white/10" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : bugsError ? (
+        <div className="mt-8">
+          <div className="alert alert-error">
+            <span>{bugsError}</span>
+          </div>
+        </div>
       ) : bugs.length === 0 ? (
         <p className="text-center text-gray-400 mt-10">
           No bugs found

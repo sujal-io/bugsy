@@ -1,18 +1,14 @@
 import { useState } from "react";
+import { useToast } from "./toast.context";
 
 function TeamGate({ onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ type: "", message: "" });
+  const toast = useToast();
 
   const API_BASE_URL =
     import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast({ type: "", message: "" }), 2000);
-  };
 
   const updateStoredUserTeam = (teamId) => {
     const stored = localStorage.getItem("user");
@@ -28,7 +24,7 @@ function TeamGate({ onTeamUpdated }) {
   const createTeam = async (e) => {
     e.preventDefault();
     if (!teamName.trim()) {
-      showToast("error", "Team name is required");
+      toast.error("Team name is required");
       return;
     }
 
@@ -49,10 +45,10 @@ function TeamGate({ onTeamUpdated }) {
 
       updateStoredUserTeam(data?.team?._id);
       onTeamUpdated?.(data?.team);
-      showToast("success", "Team created");
+      toast.success("Team created");
       setTeamName("");
     } catch (err) {
-      showToast("error", err?.message || "Create team failed");
+      toast.error(err?.message || "Create team failed");
     } finally {
       setLoading(false);
     }
@@ -61,7 +57,7 @@ function TeamGate({ onTeamUpdated }) {
   const joinTeam = async (e) => {
     e.preventDefault();
     if (!inviteCode.trim()) {
-      showToast("error", "Invite code is required");
+      toast.error("Invite code is required");
       return;
     }
 
@@ -82,10 +78,10 @@ function TeamGate({ onTeamUpdated }) {
 
       updateStoredUserTeam(data?.team?._id);
       onTeamUpdated?.(data?.team);
-      showToast("success", "Joined team");
+      toast.success("Joined team");
       setInviteCode("");
     } catch (err) {
-      showToast("error", err?.message || "Join team failed");
+      toast.error(err?.message || "Join team failed");
     } finally {
       setLoading(false);
     }
@@ -133,17 +129,6 @@ function TeamGate({ onTeamUpdated }) {
         </form>
       </div>
 
-      {toast.message && (
-        <div className="toast toast-top toast-end">
-          <div
-            className={`alert ${
-              toast.type === "error" ? "alert-error" : "alert-success"
-            }`}
-          >
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
