@@ -180,33 +180,71 @@ export const getMyBugs = async (req, res, next) => {
     if (sort === "newest") sortOption = { createdAt: -1 };
     if (sort === "oldest") sortOption = { createdAt: 1 };
 
-    const bugs = await Bug.find(filter)
-      .populate("user", "username email")
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limitNumber);
+    const [totalCount, bugs] = await Promise.all([
+      Bug.countDocuments(filter),
+      Bug.find(filter)
+        .populate("user", "username email")
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNumber),
+    ]);
 
-    return res.status(200).json(bugs);
+    const totalPages = Math.max(1, Math.ceil(totalCount / limitNumber));
+
+    return res.status(200).json({
+      bugs,
+      page: pageNumber,
+      limit: limitNumber,
+      totalCount,
+      totalPages,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const getTeamBugs = async (req, res) => {
+export const getTeamBugs = async (req, res, next) => {
   try {
+    const { status, priority, search, page = 1, limit = 10, sort } = req.query;
     const user = await User.findById(req.user.id);
 
     if (!user?.team) {
       return res.status(400).json({ message: "User is not part of any team" });
     }
 
-    const bugs = await Bug.find({ team: user.team })
-      .populate("user", "username")
-      .populate("updatedBy", "username")
-      .sort({ createdAt: -1 });
+    const filter = { team: user.team };
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (search) filter.title = { $regex: search, $options: "i" };
 
-    res.json(bugs);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    let sortOption = { createdAt: -1 };
+    if (sort === "newest") sortOption = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+
+    const [totalCount, bugs] = await Promise.all([
+      Bug.countDocuments(filter),
+      Bug.find(filter)
+        .populate("user", "username email")
+        .populate("updatedBy", "username email")
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNumber),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(totalCount / limitNumber));
+
+    return res.status(200).json({
+      bugs,
+      page: pageNumber,
+      limit: limitNumber,
+      totalCount,
+      totalPages,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
