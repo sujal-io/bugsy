@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BugsyLogo from "../components/BugsyLogo";
-import { useToast } from "../components/toast.context";
+import { useToast } from "../components/ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 
 function Signup() {
@@ -32,15 +31,18 @@ function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] flex items-center justify-center text-white">
-
       <div className="flex w-[900px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden">
-
         {/* Left - Form */}
         <div className="w-full md:w-1/2 p-8">
-
           <div className="mb-6">
-            <BugsyLogo className="h-10 w-10" wordmarkClassName="text-3xl" />
-            <p className="text-gray-400 text-sm mt-1">Track bugs. Ship faster.</p>
+            <img
+              src="/bugsy-logo.png"
+              alt="Bugsy"
+              className="h-12 w-auto object-contain"
+            />
+            <p className="text-gray-400 text-sm mt-1">
+              Track bugs. Ship faster.
+            </p>
           </div>
 
           {/* Heading */}
@@ -99,9 +101,7 @@ function Signup() {
             className="w-full max-w-lg object-contain"
           />
         </div>
-
       </div>
-
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import BugsyLogo from "./BugsyLogo";
 
 function Navbar() {
   const handleLogout = () => {
@@ -11,8 +10,12 @@ function Navbar() {
   return (
     <div className="navbar bg-white/10 backdrop-blur-md border border-white/20 rounded-xl mb-6">
       <div className="flex-1">
-        <Link to="/dashboard" className="btn btn-ghost text-white">
-          <BugsyLogo />
+        <Link to="/dashboard" className="flex items-center gap-2 text-white">
+          <img
+              src="/bugsy-logo.png"
+              alt="Bugsy"
+              className="h-12 w-auto object-contain"
+            />
         </Link>
       </div>
 
