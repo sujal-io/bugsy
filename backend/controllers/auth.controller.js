@@ -61,7 +61,7 @@ export const loginUser = async (req, res, next) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        team: user.team || null,
+        teams: user.teams || [],
       },
     });
   } catch (error) {

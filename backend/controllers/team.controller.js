@@ -5,14 +5,8 @@ export const createTeam = async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Check if user already in a team
+    // Get user (no single team restriction)
     const user = await User.findById(req.user.id);
-
-    if (user.team) {
-      return res.status(400).json({
-        message: "User already in a team",
-      });
-    }
 
     // Generate invite code
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -25,9 +19,11 @@ export const createTeam = async (req, res) => {
       inviteCode,
     });
 
-    // Assign team to user
-    user.team = team._id;
-    await user.save();
+    // Add team to user's teams array
+    if (!user.teams.includes(team._id)) {
+      user.teams.push(team._id);
+      await user.save();
+    }
 
     // Populate admin and members
     const populatedTeam = await Team.findById(team._id)
@@ -52,13 +48,6 @@ export const joinTeam = async (req, res) => {
     // find user
     const user = await User.findById(req.user.id);
 
-    // check if already in a team
-    if (user.team) {
-      return res.status(400).json({
-        message: "User already in a team",
-      });
-    }
-
     // find team by invite code
     const team = await Team.findOne({ inviteCode });
 
@@ -68,12 +57,19 @@ export const joinTeam = async (req, res) => {
       });
     }
 
+    // check if already in this team
+    if (user.teams.includes(team._id)) {
+      return res.status(400).json({
+        message: "User already in this team",
+      });
+    }
+
     // add user to team members
     team.members.push(req.user.id);
     await team.save();
 
-    // assign team to user
-    user.team = team._id;
+    // add team to user's teams array
+    user.teams.push(team._id);
     await user.save();
 
     // opulate for response
@@ -92,15 +88,36 @@ export const joinTeam = async (req, res) => {
   }
 };
 
-export const getMyTeam = async (req, res) => {
+export const getMyTeams = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).populate("teams");
 
-    if (!user?.team) {
-      return res.status(404).json({ message: "User is not part of any team" });
+    if (!user?.teams || user.teams.length === 0) {
+      return res.status(200).json({ teams: [] });
     }
 
-    const populatedTeam = await Team.findById(user.team)
+    const populatedTeams = await Team.find({ _id: { $in: user.teams } })
+      .populate("admin", "username email")
+      .populate("members", "username email");
+
+    return res.status(200).json({ teams: populatedTeams });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getTeamById = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const user = await User.findById(req.user.id);
+
+    // Check if user is member of this team
+    if (!user.teams.includes(teamId)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const populatedTeam = await Team.findById(teamId)
       .populate("admin", "username email")
       .populate("members", "username email");
 
@@ -109,6 +126,47 @@ export const getMyTeam = async (req, res) => {
     }
 
     return res.status(200).json({ team: populatedTeam });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const leaveTeam = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const user = await User.findById(req.user.id);
+
+    // Check if user is member of this team
+    if (!user.teams.includes(teamId)) {
+      return res.status(400).json({ message: "User is not a member of this team" });
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    // Remove user from team members
+    team.members = team.members.filter(memberId => memberId.toString() !== req.user.id);
+    await team.save();
+
+    // Remove team from user's teams array
+    user.teams = user.teams.filter(team => team.toString() !== teamId);
+    await user.save();
+
+    // If user was admin, transfer admin to next member or delete team
+    if (team.admin.toString() === req.user.id) {
+      if (team.members.length > 0) {
+        team.admin = team.members[0];
+        await team.save();
+      } else {
+        await Team.findByIdAndDelete(teamId);
+        return res.status(200).json({ message: "Team deleted as you were the last member" });
+      }
+    }
+
+    return res.status(200).json({ message: "Left team successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
