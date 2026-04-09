@@ -5,6 +5,8 @@ import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
 import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
+import TeamSelector from "../components/TeamSelector";
+import TeamManagement from "../components/TeamManagement";
 import { useToast } from "../components/ToastProvider.jsx";
 import Navbar from "../components/Navbar";
 import { apiRequest } from "../lib/apiClient";
@@ -14,7 +16,9 @@ function Dashboard() {
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState("my"); // "my" | "team"
-  const [team, setTeam] = useState(null);
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [showTeamManagement, setShowTeamManagement] = useState(false);
   const [bugsError, setBugsError] = useState("");
   const [totalPages, setTotalPages] = useState(1);
 
@@ -30,6 +34,14 @@ function Dashboard() {
 
   // User
   const user = JSON.parse(localStorage.getItem("user"));
+
+  // Initialize teams from user data
+  useEffect(() => {
+    if (user?.teams && user.teams.length > 0) {
+      setTeams(user.teams);
+      setSelectedTeam(user.teams[0]);
+    }
+  }, [user]);
 
   // Logout
   const handleLogout = () => {
@@ -48,8 +60,8 @@ function Dashboard() {
         return;
       }
 
-      // If user has no team, skip bug fetch (CreateBug requires a team)
-      if (!user?.team) {
+      // If user has no teams or no selected team, skip bug fetch
+      if (!selectedTeam) {
         setBugs([]);
         setTotalPages(1);
         setLoading(false);
@@ -93,21 +105,20 @@ function Dashboard() {
       setBugsError(error?.message || "Network error while fetching bugs");
       setLoading(false);
     }
-  }, [user?.team, scope, statusFilter, priorityFilter, search, page]);
+  }, [selectedTeam, scope, statusFilter, priorityFilter, search, page]);
 
-  const fetchTeam = useCallback(async () => {
+  const fetchTeams = useCallback(async () => {
     try {
       if (!localStorage.getItem("token")) return;
-      if (!user?.team) {
-        setTeam(null);
-        return;
+      const data = await apiRequest("/api/team/teams");
+      setTeams(data?.teams || []);
+      if (data?.teams?.length > 0 && !selectedTeam) {
+        setSelectedTeam(data.teams[0]);
       }
-      const data = await apiRequest("/api/team/me");
-      setTeam(data?.team || null);
     } catch {
-      setTeam(null);
+      setTeams([]);
     }
-  }, [user?.team]);
+  }, [selectedTeam]);
 
   // Fetch on change
   useEffect(() => {
@@ -115,8 +126,8 @@ function Dashboard() {
   }, [fetchBugs]);
 
   useEffect(() => {
-    fetchTeam();
-  }, [fetchTeam]);
+    fetchTeams();
+  }, [fetchTeams]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -200,8 +211,8 @@ function Dashboard() {
         Welcome back, {user?.username}
       </p>
 
-      {/* No-team gate */}
-      {!user?.team ? (
+      {/* No-teams gate */}
+      {teams.length === 0 ? (
         <div className="mt-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-6">
             <h2 className="text-xl font-semibold mb-1">You’re not in a team yet</h2>
@@ -212,76 +223,98 @@ function Dashboard() {
 
           <TeamGate
             onTeamUpdated={(t) => {
-              setTeam(t);
+              setTeams(prev => [...prev, t]);
+              setSelectedTeam(t);
               window.location.reload();
             }}
           />
         </div>
       ) : (
         <>
-          {/* Team info */}
-          <TeamPanel team={team} />
+          {/* Team selector and info */}
+          <div className="flex justify-between items-center mb-6">
+            <TeamSelector
+              teams={teams}
+              selectedTeam={selectedTeam}
+              onTeamSelect={setSelectedTeam}
+              onManageTeams={() => setShowTeamManagement(true)}
+            />
+          </div>
 
-      {/* Filters */}
-      <FilterBar
-        search={search}
-        setSearch={setSearch}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        priorityFilter={priorityFilter}
-        setPriorityFilter={setPriorityFilter}
-      />
+          {selectedTeam && <TeamPanel team={selectedTeam} />}
 
-      {/* Create Bug */}
-      <CreateBugForm createBug={createBug} />
+          {/* Filters */}
+          <FilterBar
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+          />
 
-      {/* Bug List */}
-      {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white/10 border border-white/20 rounded-xl p-5"
-            >
-              <div className="skeleton h-5 w-3/4 mb-3 bg-white/10" />
-              <div className="skeleton h-3 w-full mb-2 bg-white/10" />
-              <div className="skeleton h-3 w-5/6 mb-6 bg-white/10" />
-              <div className="flex gap-2">
-                <div className="skeleton h-6 w-20 bg-white/10" />
-                <div className="skeleton h-6 w-20 bg-white/10" />
+          {/* Create Bug */}
+          <CreateBugForm createBug={createBug} />
+
+          {/* Bug List */}
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white/10 border border-white/20 rounded-xl p-5"
+                >
+                  <div className="skeleton h-5 w-3/4 mb-3 bg-white/10" />
+                  <div className="skeleton h-3 w-full mb-2 bg-white/10" />
+                  <div className="skeleton h-3 w-5/6 mb-6 bg-white/10" />
+                  <div className="flex gap-2">
+                    <div className="skeleton h-6 w-20 bg-white/10" />
+                    <div className="skeleton h-6 w-20 bg-white/10" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : bugsError ? (
+            <div className="mt-8">
+              <div className="alert alert-error">
+                <span>{bugsError}</span>
               </div>
             </div>
-          ))}
-        </div>
-      ) : bugsError ? (
-        <div className="mt-8">
-          <div className="alert alert-error">
-            <span>{bugsError}</span>
-          </div>
-        </div>
-      ) : bugs.length === 0 ? (
-        <p className="text-center text-gray-400 mt-10">
-          No bugs found
-        </p>
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bugs.map((bug) => (
-            <BugCard
-              key={bug._id}
-              bug={bug}
-              deleteBug={deleteBug}
-              updateBug={updateBug}
-            />
-          ))}
-        </div>
-      )}
+          ) : bugs.length === 0 ? (
+            <p className="text-center text-gray-400 mt-10">
+              No bugs found
+            </p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {bugs.map((bug) => (
+                <BugCard
+                  key={bug._id}
+                  bug={bug}
+                  deleteBug={deleteBug}
+                  updateBug={updateBug}
+                />
+              ))}
+            </div>
+          )}
 
-      {/* Pagination */}
-      <Pagination page={page} setPage={setPage} totalPages={totalPages} />
-
+          {/* Pagination */}
+          <Pagination page={page} setPage={setPage} totalPages={totalPages} />
         </>
       )}
 
+      {/* Team Management Modal */}
+      {showTeamManagement && (
+        <TeamManagement
+          teams={teams}
+          onTeamsUpdated={(updatedTeams) => {
+            setTeams(updatedTeams);
+            if (!selectedTeam && updatedTeams.length > 0) {
+              setSelectedTeam(updatedTeams[0]);
+            }
+          }}
+          onClose={() => setShowTeamManagement(false)}
+        />
+      )}
     </div>
   );
 }

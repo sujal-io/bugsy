@@ -8,12 +8,14 @@ function TeamGate({ onTeamUpdated }) {
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
-  const updateStoredUserTeam = (teamId) => {
+  const updateStoredUserTeams = (teamId) => {
     const stored = localStorage.getItem("user");
     if (!stored) return;
     try {
       const u = JSON.parse(stored);
-      localStorage.setItem("user", JSON.stringify({ ...u, team: teamId }));
+      const currentTeams = u.teams || [];
+      const updatedTeams = currentTeams.includes(teamId) ? currentTeams : [...currentTeams, teamId];
+      localStorage.setItem("user", JSON.stringify({ ...u, teams: updatedTeams }));
     } catch {
       // ignore malformed user in storage
     }
@@ -33,7 +35,7 @@ function TeamGate({ onTeamUpdated }) {
         body: { name: teamName.trim() },
       });
 
-      updateStoredUserTeam(data?.team?._id);
+      updateStoredUserTeams(data?.team?._id);
       onTeamUpdated?.(data?.team);
       toast.success("Team created");
       setTeamName("");
@@ -58,7 +60,7 @@ function TeamGate({ onTeamUpdated }) {
         body: { inviteCode: inviteCode.trim().toUpperCase() },
       });
 
-      updateStoredUserTeam(data?.team?._id);
+      updateStoredUserTeams(data?.team?._id);
       onTeamUpdated?.(data?.team);
       toast.success("Joined team");
       setInviteCode("");
