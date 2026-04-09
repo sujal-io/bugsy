@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToast } from "./toast.context";
+import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 
 function TeamGate({ onTeamUpdated }) {

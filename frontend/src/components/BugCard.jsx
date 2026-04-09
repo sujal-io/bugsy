@@ -1,8 +1,15 @@
 import { useState } from "react";
+import { useEffect } from "react";
 
 function BugCard({ bug, deleteBug, updateBug }) {
-  const [solution, setSolution] = useState(bug.solution || "");
+  const [solution, setSolution] = useState("");
   const [status, setStatus] = useState(bug.status);
+
+  // Reset local edit state when the bug prop changes (e.g. on reload)
+  useEffect(() => {
+    setSolution("");
+    setStatus(bug.status);
+  }, [bug._id]);
   const getPriorityColor = (priority) => {
     if (priority === "High") return "bg-orange-400/20 text-orange-300";
     if (priority === "Medium") return "bg-yellow-400/20 text-yellow-300";
@@ -17,15 +24,17 @@ function BugCard({ bug, deleteBug, updateBug }) {
 
   const handleUpdate = () => {
     updateBug(bug._id, status, status === "Fixed" ? solution : undefined);
+
+    if (status === "Fixed") {
+    setSolution("");
+  }
   };
 
   return (
     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-5 shadow-lg hover:shadow-xl transition">
       <h2 className="text-lg font-semibold mb-1">{bug.title}</h2>
 
-      <p className="text-gray-300 text-sm mb-3">
-        {bug.description}
-      </p>
+      <p className="text-gray-300 text-sm mb-3">{bug.description}</p>
 
       <p className="text-gray-400 text-xs mb-3">
         Created by: {bug.user?.username}
@@ -36,9 +45,7 @@ function BugCard({ bug, deleteBug, updateBug }) {
       </p>
 
       {bug.solution && (
-        <p className="text-green-300 text-sm mb-3">
-          Solution: {bug.solution}
-        </p>
+        <p className="text-green-300 text-sm mb-3">Solution: {bug.solution}</p>
       )}
 
       <div className="flex justify-between items-center text-sm mb-3">
@@ -46,7 +53,9 @@ function BugCard({ bug, deleteBug, updateBug }) {
           {status}
         </span>
 
-        <span className={`px-2 py-1 rounded-md ${getPriorityColor(bug.priority)}`}>
+        <span
+          className={`px-2 py-1 rounded-md ${getPriorityColor(bug.priority)}`}
+        >
           {bug.priority}
         </span>
       </div>
@@ -78,20 +87,21 @@ function BugCard({ bug, deleteBug, updateBug }) {
       )}
 
       {/* Update Button */}
-      <button
-        onClick={handleUpdate}
-        className="w-full bg-blue-500 mt-2 p-2 rounded"
-      >
-        Update
-      </button>
+      <div className="flex flex-col gap-3 mt-2">
+        <button
+          onClick={handleUpdate}
+          className="w-full bg-blue-500 p-2 rounded"
+        >
+          Update
+        </button>
 
-
-      <button
-        className="w-full bg-red-500/80 hover:bg-red-600 p-2 rounded transition"
-        onClick={() => deleteBug(bug._id)}
-      >
-        Delete
-      </button>
+        <button
+          className="w-full bg-red-500/80 hover:bg-red-600 p-2 rounded transition"
+          onClick={() => deleteBug(bug._id)}
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
 import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
-import { useToast } from "../components/toast.context";
+import { useToast } from "../components/ToastProvider.jsx";
 import Navbar from "../components/Navbar";
 import { apiRequest } from "../lib/apiClient";
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BugsyLogo from "../components/BugsyLogo";
-import { useToast } from "../components/toast.context";
+import { useToast } from "../components/ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 
 function Login() {
@@ -41,7 +40,11 @@ function Login() {
         <div className="w-full md:w-1/2 p-8">
 
           <div className="mb-6">
-            <BugsyLogo className="h-10 w-10" wordmarkClassName="text-3xl" />
+            <img
+              src="/bugsy-logo.png"
+              alt="Bugsy"
+              className="h-12 w-auto object-contain"
+            />
             <p className="text-gray-400 text-sm mt-1">Track bugs. Ship faster.</p>
           </div>
 
