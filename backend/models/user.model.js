@@ -19,11 +19,10 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    team: {
+    teams: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Team",
-      default: null,
-    },
+    }],
   },
   { timestamps: true },
 );
