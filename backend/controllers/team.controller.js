@@ -114,3 +114,56 @@ export const getMyTeam = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const leaveTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user?.team) {
+      return res.status(400).json({ message: "User is not part of any team" });
+    }
+
+    const team = await Team.findById(user.team);
+
+    if (!team) {
+      // clear user's team just in case
+      user.team = null;
+      await user.save();
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    // Remove user from members
+    team.members = team.members.filter(
+      (m) => m.toString() !== req.user.id.toString()
+    );
+
+    // If the user was the admin
+    if (team.admin.toString() === req.user.id.toString()) {
+      if (team.members.length > 0) {
+        // Promote the first remaining member to admin
+        team.admin = team.members[0];
+      } else {
+        // No members left -> delete the team
+        await Team.findByIdAndDelete(team._id);
+        user.team = null;
+        await user.save();
+        return res.status(200).json({ message: "Left team and deleted empty team", team: null });
+      }
+    }
+
+    await team.save();
+
+    // Clear user's team
+    user.team = null;
+    await user.save();
+
+    const populatedTeam = await Team.findById(team._id)
+      .populate("admin", "username email")
+      .populate("members", "username email");
+
+    return res.status(200).json({ message: "Left team successfully", team: populatedTeam });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
