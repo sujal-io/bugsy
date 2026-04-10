@@ -6,12 +6,14 @@ import { apiRequest } from "../lib/apiClient";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const data = await apiRequest("/api/auth/login", {
@@ -28,6 +30,8 @@ function Login() {
       setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err) {
       toast.error(err?.message || "Network error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,10 +76,14 @@ function Login() {
             />
 
             <button
+              disabled={loading}
               className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 
-              hover:from-blue-600 hover:to-blue-700 transition"
+              hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign In
+              {loading && (
+                <span className="loading loading-spinner loading-xs"></span>
+              )}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
