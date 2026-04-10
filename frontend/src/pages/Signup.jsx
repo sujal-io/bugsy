@@ -7,12 +7,14 @@ function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       await apiRequest("/api/auth/register", {
@@ -26,6 +28,8 @@ function Signup() {
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       toast.error(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,10 +82,14 @@ function Signup() {
             />
 
             <button
+              disabled={loading}
               className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 
-              hover:from-blue-600 hover:to-blue-700 transition"
+              hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign Up
+              {loading && (
+                <span className="loading loading-spinner loading-xs"></span>
+              )}
+              {loading ? "Signing up..." : "Sign Up"}
             </button>
           </form>
 

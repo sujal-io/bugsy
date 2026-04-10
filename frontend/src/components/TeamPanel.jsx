@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 
 function TeamPanel({ team, onLeave }) {
   const [leaving, setLeaving] = useState(false);
   const toast = useToast();
+  const modalRef = useRef(null);
 
   if (!team) return null;
 
@@ -35,28 +36,7 @@ function TeamPanel({ team, onLeave }) {
           <button
             type="button"
             className="btn btn-sm btn-error"
-            onClick={async () => {
-              if (leaving) return;
-              if (!confirm("Are you sure you want to leave the team?")) return;
-              setLeaving(true);
-              try {
-                await apiRequest("/api/team/leave", { method: "POST" });
-                const stored = localStorage.getItem("user");
-                if (stored) {
-                  try {
-                    const u = JSON.parse(stored);
-                    localStorage.setItem("user", JSON.stringify({ ...u, team: null }));
-                  } catch {}
-                }
-                toast.success("Left team");
-                onLeave?.();
-                window.location.reload();
-              } catch (err) {
-                toast.error(err?.message || "Leave team failed");
-              } finally {
-                setLeaving(false);
-              }
-            }}
+            onClick={() => modalRef.current?.showModal()}
             disabled={leaving}
           >
             {leaving ? "Leaving..." : "Leave"}
@@ -79,6 +59,50 @@ function TeamPanel({ team, onLeave }) {
           </div>
         </div>
       )}
+
+      <dialog ref={modalRef} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Leave Team?</h3>
+          <p className="py-4">Are you sure you want to leave <span className="font-semibold">{team.name}</span>?</p>
+          <div className="modal-action">
+            <button 
+              type="button"
+              className="btn" 
+              onClick={() => modalRef.current?.close()}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-error"
+              onClick={async () => {
+                setLeaving(true);
+                try {
+                  await apiRequest("/api/team/leave", { method: "POST" });
+                  const stored = localStorage.getItem("user");
+                  if (stored) {
+                    try {
+                      const u = JSON.parse(stored);
+                      localStorage.setItem("user", JSON.stringify({ ...u, team: null }));
+                    } catch {}
+                  }
+                  toast.success("Left team successfully");
+                  onLeave?.();
+                  window.location.reload();
+                } catch (err) {
+                  toast.error(err?.message || "Leave team failed");
+                } finally {
+                  setLeaving(false);
+                  modalRef.current?.close();
+                }
+              }}
+              disabled={leaving}
+            >
+              {leaving ? "Leaving..." : "Leave"}
+            </button>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 }
