@@ -220,7 +220,7 @@ function Dashboard() {
       ) : (
         <>
           {/* Team info */}
-          <TeamPanel team={team} />
+          <TeamPanel team={team} onLeave={() => { setTeam(null); window.location.reload(); }} />
 
       {/* Filters */}
       <FilterBar
