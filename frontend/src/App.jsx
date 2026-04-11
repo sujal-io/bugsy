@@ -7,21 +7,23 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} /> 
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+    <div className="bg-gradient-to-r from-[#141e30] to-[#243b55]">
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} /> 
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
 
-      // protected route for dashboard
-       <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+        {/* protected route for dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
   );
 }
 

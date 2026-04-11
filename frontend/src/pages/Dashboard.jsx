@@ -7,6 +7,7 @@ import TeamGate from "../components/TeamGate";
 import TeamPanel from "../components/TeamPanel";
 import { useToast } from "../components/ToastProvider.jsx";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { apiRequest } from "../lib/apiClient";
 
 function Dashboard() {
@@ -169,10 +170,11 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] text-white p-6">
+    <div className="text-white p-6 min-h-screen flex flex-col">
 
       <Navbar />
 
+      <div className="flex-1">
       {/* Scope tabs */}
       <div className="mb-4">
         <div role="tablist" className="tabs tabs-boxed bg-white/10">
@@ -281,7 +283,9 @@ function Dashboard() {
 
         </>
       )}
+      </div>
 
+      <Footer />
     </div>
   );
 }
