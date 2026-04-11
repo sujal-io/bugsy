@@ -36,12 +36,12 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#141e30] to-[#243b55] flex items-center justify-center text-white">
+    <div className="flex items-center justify-center text-white p-4 min-h-screen">
 
-      <div className="flex w-[900px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden">
+      <div className="flex w-full max-w-[900px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden max-h-[90vh]">
 
         {/* Left - Form */}
-        <div className="w-full md:w-1/2 p-8">
+        <div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto">
 
           <div className="mb-6">
             <img
@@ -53,14 +53,14 @@ function Login() {
           </div>
 
           {/* Heading */}
-          <h2 className="text-2xl font-semibold mb-2">Welcome Back</h2>
-          <p className="text-gray-300 mb-6">Login to your account</p>
+          <h2 className="text-xl md:text-2xl font-semibold mb-2">Welcome Back</h2>
+          <p className="text-gray-300 mb-4 text-sm md:text-base">Login to your account</p>
 
           <form onSubmit={handleSubmit}>
             <input
               type="email"
               placeholder="Email"
-              className="w-full p-3 mb-4 rounded-lg bg-white/5 border border-white/20 
+              className="w-full p-2 md:p-3 mb-3 rounded-lg bg-white/5 border border-white/20 text-sm
               focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -69,7 +69,7 @@ function Login() {
             <input
               type="password"
               placeholder="Password"
-              className="w-full p-3 mb-4 rounded-lg bg-white/5 border border-white/20 
+              className="w-full p-2 md:p-3 mb-3 rounded-lg bg-white/5 border border-white/20 text-sm
               focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -77,7 +77,7 @@ function Login() {
 
             <button
               disabled={loading}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 
+              className="w-full py-2 md:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-sm md:text-base
               hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading && (
