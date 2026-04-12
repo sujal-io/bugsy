@@ -6,6 +6,7 @@ import bugRoutes from "./routes/bug.route.js";
 import authRoutes from "./routes/auth.route.js";
 import teamRoutes from "./routes/team.route.js";
 import errorHandler from "./middlewares/error.middleware.js";
+import aiRoutes from "./routes/ai.route.js";
 
 dotenv.config({quiet: true});
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/api/bugs", bugRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/team", teamRoutes);
+app.use("/api/ai", aiRoutes);
 
 // error middleware (always last)
 app.use(errorHandler);
