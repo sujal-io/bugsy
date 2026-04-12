@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
+import CommentSection from "./CommentSection.jsx";
 
 function BugCard({ bug, deleteBug, updateBug }) {
   const toast = useToast();
@@ -213,6 +214,9 @@ function BugCard({ bug, deleteBug, updateBug }) {
           </div>
         </div>
       )}
+
+      <CommentSection bugId={bug._id} />
+
     </div>
   );
 }
