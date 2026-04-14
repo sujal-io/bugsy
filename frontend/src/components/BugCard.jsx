@@ -1,24 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 import CommentSection from "./CommentSection.jsx";
 
 function BugCard({ bug, deleteBug, updateBug }) {
   const toast = useToast();
+  const commentRef = useRef(null);
 
   const [solution, setSolution] = useState("");
   const [status, setStatus] = useState(bug.status);
-
+  const [showComments, setShowComments] = useState(false);
   const [aiResult, setAiResult] = useState("");
-  const [showAI, setShowAI] = useState(false); // 👈 NEW
+  const [showAI, setShowAI] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
+
+
+  const isCommentsOpen = showComments;
 
   useEffect(() => {
     setSolution("");
     setStatus(bug.status);
     setAiResult("");
-    setShowAI(false); // reset on bug change
+    setShowAI(false);
   }, [bug._id]);
+
+  // Auto-scroll when comments open
+  useEffect(() => {
+    if (isCommentsOpen && commentRef.current) {
+      commentRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [isCommentsOpen]);
+
+  // Toggle handler 
+  const handleToggleComments = () => {
+    setShowComments((prev) => !prev);
+  };
 
   const getPriorityColor = (priority) => {
     if (priority === "High") return "bg-orange-400/20 text-orange-300";
@@ -37,9 +56,7 @@ function BugCard({ bug, deleteBug, updateBug }) {
     if (status === "Fixed") setSolution("");
   };
 
-  // ✅ AI CALL (with caching behavior)
   const getAISolution = async () => {
-    // If already fetched → just show
     if (aiResult) {
       setShowAI(true);
       return;
@@ -56,9 +73,7 @@ function BugCard({ bug, deleteBug, updateBug }) {
         },
       });
 
-      if (!data || !data.result) {
-        throw new Error("Invalid AI response");
-      }
+      if (!data || !data.result) throw new Error("Invalid AI response");
 
       setAiResult(data.result);
       setShowAI(true);
@@ -69,7 +84,6 @@ function BugCard({ bug, deleteBug, updateBug }) {
     }
   };
 
-  // ✅ SAFE FORMATTER
   const formatAI = (text = "") => {
     if (!text) return { cause: "", fixes: [] };
 
@@ -172,11 +186,29 @@ function BugCard({ bug, deleteBug, updateBug }) {
         </button>
       </div>
 
+      {/* COMMENTS DROPDOWN  */}
+       <button
+        onClick={handleToggleComments}
+        className="w-full flex justify-between items-center px-3 py-2 bg-white/5 rounded border border-white/20 mt-3"
+      >
+        <span>
+          💬 Comments
+        </span>
+        <span>{isCommentsOpen ? "▲" : "▼"}</span>
+      </button>
+
+      <div
+        ref={commentRef}
+        className={`transition-all duration-300 overflow-hidden ${
+          isCommentsOpen ? "max-h-screen mt-2" : "max-h-0"
+        }`}
+      >
+        {isCommentsOpen && <CommentSection bugId={bug._id} />}
+      </div>
+
       {/* AI Result */}
       {formatted && showAI && (
         <div className="mt-3 p-4 bg-white/10 border border-white/20 rounded-lg text-sm relative">
-          
-          {/* Hide button (does NOT delete data) */}
           <button
             onClick={() => setShowAI(false)}
             className="absolute top-2 right-2 text-gray-400 hover:text-red-400"
@@ -184,7 +216,6 @@ function BugCard({ bug, deleteBug, updateBug }) {
             ✖
           </button>
 
-          {/* Copy */}
           <button
             onClick={() => {
               navigator.clipboard.writeText(aiResult);
@@ -214,9 +245,6 @@ function BugCard({ bug, deleteBug, updateBug }) {
           </div>
         </div>
       )}
-
-      <CommentSection bugId={bug._id} />
-
     </div>
   );
 }

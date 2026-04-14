@@ -1,6 +1,6 @@
 import Comment from "../models/comment.model.js";
 
-// ➕ Add comment
+// Add comment
 export const addComment = async (req, res) => {
   try {
     const { bugId, text } = req.body;
