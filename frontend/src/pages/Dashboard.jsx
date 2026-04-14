@@ -125,11 +125,11 @@ function Dashboard() {
   }, [scope, statusFilter, priorityFilter, search]);
 
   // Create Bug
-  const createBug = async (title, description, priority) => {
+  const createBug = async (title, description, priority, assignedTo) => {
     try {
       await apiRequest("/api/bugs", {
         method: "POST",
-        body: { title, description, priority },
+        body: { title, description, priority, assignedTo: assignedTo || undefined },
       });
 
       fetchBugs();
@@ -154,11 +154,16 @@ function Dashboard() {
   };
 
   // Update Bug
-  const updateBug = async (id, status, solution) => {
+  const updateBug = async (id, status, solution, assignedTo) => {
     try {
+      const body = {};
+      if (status !== undefined) body.status = status;
+      if (solution !== undefined) body.solution = solution;
+      if (assignedTo !== undefined) body.assignedTo = assignedTo;
+
       await apiRequest(`/api/bugs/${id}`, {
         method: "PUT",
-        body: { status, solution },
+        body,
       });
 
       fetchBugs();
@@ -235,7 +240,7 @@ function Dashboard() {
       />
 
       {/* Create Bug */}
-      <CreateBugForm createBug={createBug} />
+      <CreateBugForm createBug={createBug} teamMembers={team?.members || []} />
 
       {/* Bug List */}
       {loading ? (
@@ -273,6 +278,9 @@ function Dashboard() {
               bug={bug}
               deleteBug={deleteBug}
               updateBug={updateBug}
+              teamMembers={team?.members || []}
+              currentUserId={user?.id}
+              isTeamAdmin={String(team?.admin?._id || team?.admin) === String(user?.id)}
             />
           ))}
         </div>

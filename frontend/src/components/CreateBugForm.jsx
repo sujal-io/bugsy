@@ -1,18 +1,20 @@
 import { useState } from "react";
 
-function CreateBugForm({ createBug }) {
+function CreateBugForm({ createBug, teamMembers = [] }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
+  const [assignedTo, setAssignedTo] = useState("");
 
   const handleSubmit = () => {
     if (!title || !description) return;
 
-    createBug(title, description, priority);
+    createBug(title, description, priority, assignedTo);
 
     setTitle("");
     setDescription("");
     setPriority("Low");
+    setAssignedTo("");
   };
 
   return (
@@ -47,6 +49,29 @@ function CreateBugForm({ createBug }) {
           <option className="text-black">Low</option>
           <option className="text-black">Medium</option>
           <option className="text-black">High</option>
+        </select>
+
+        <span className="absolute right-3 top-3 text-gray-300 pointer-events-none">
+          ▼
+        </span>
+      </div>
+
+      <div className="relative mb-4">
+        <select
+          className="w-full p-3 rounded-lg bg-white/5 border border-white/20 
+          text-white appearance-none"
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+        >
+          <option className="text-black" value="">
+            Assign to someone (optional)
+          </option>
+
+          {teamMembers?.map((m) => (
+            <option key={m._id} value={m._id} className="text-black">
+              {m.username}
+            </option>
+          ))}
         </select>
 
         <span className="absolute right-3 top-3 text-gray-300 pointer-events-none">
