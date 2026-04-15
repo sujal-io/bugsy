@@ -286,7 +286,7 @@ export const getMyBugs = async (req, res, next) => {
 // ---------------- TEAM BUGS ----------------
 export const getTeamBugs = async (req, res, next) => {
   try {
-    const { status, priority, search, page = 1, limit = 10, sort } = req.query;
+    const { status, priority, search, page = 1, limit = 10, sort, assignedTo } = req.query;
     const user = await User.findById(req.user.id);
 
     if (!user?.team) {
@@ -298,6 +298,7 @@ export const getTeamBugs = async (req, res, next) => {
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
     if (search) filter.title = { $regex: search, $options: "i" };
+    if (assignedTo) filter.assignedTo = assignedTo;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);

@@ -14,7 +14,7 @@ function Dashboard() {
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [scope, setScope] = useState("my"); // "my" | "team"
+  const [view, setView] = useState("my"); // "my" | "team" | "assigned"
   const [team, setTeam] = useState(null);
   const [bugsError, setBugsError] = useState("");
   const [totalPages, setTotalPages] = useState(1);
@@ -65,11 +65,20 @@ function Dashboard() {
 
       query += `page=${page}&limit=6`;
 
-      const endpoint = scope === "team" ? "team" : "my";
+      let endpoint = "my";
+      if (view === "team") {
+        endpoint = "team";
+      } else if (view === "assigned") {
+        endpoint = `team?assignedTo=${user.id}`;
+      }
+
+      // Build URL with proper query separator
+      const queryString = endpoint.includes("?") ? `&${query}` : `?${query}`;
+      const url = `/api/bugs/${endpoint}${queryString}`;
 
       let data;
       try {
-        data = await apiRequest(`/api/bugs/${endpoint}?${query}`);
+        data = await apiRequest(url);
       } catch (err) {
         if (err?.status === 401) {
           handleLogout();
@@ -94,7 +103,7 @@ function Dashboard() {
       setBugsError(error?.message || "Network error while fetching bugs");
       setLoading(false);
     }
-  }, [user?.team, scope, statusFilter, priorityFilter, search, page]);
+  }, [user?.team, user?.id, view, statusFilter, priorityFilter, search, page]);
 
   const fetchTeam = useCallback(async () => {
     try {
@@ -122,7 +131,7 @@ function Dashboard() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [scope, statusFilter, priorityFilter, search]);
+  }, [view, statusFilter, priorityFilter, search]);
 
   // Create Bug
   const createBug = async (title, description, priority, assignedTo) => {
@@ -186,18 +195,26 @@ function Dashboard() {
           <button
             role="tab"
             type="button"
-            className={`tab ${scope === "my" ? "tab-active" : ""}`}
-            onClick={() => setScope("my")}
+            className={`tab ${view === "my" ? "tab-active" : ""}`}
+            onClick={() => setView("my")}
           >
             My Bugs
           </button>
           <button
             role="tab"
             type="button"
-            className={`tab ${scope === "team" ? "tab-active" : ""}`}
-            onClick={() => setScope("team")}
+            className={`tab ${view === "team" ? "tab-active" : ""}`}
+            onClick={() => setView("team")}
           >
             Team Bugs
+          </button>
+          <button
+            role="tab"
+            type="button"
+            className={`tab ${view === "assigned" ? "tab-active" : ""}`}
+            onClick={() => setView("assigned")}
+          >
+            Assigned to Me
           </button>
         </div>
       </div>
