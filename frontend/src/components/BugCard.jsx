@@ -136,6 +136,15 @@ function BugCard({
       <h2 className="text-lg font-semibold mb-1">{bug.title}</h2>
       <p className="text-gray-300 text-sm mb-4">{bug.description}</p>
 
+      {/* Assigned to you badge */}
+      {isAssignedUser && (
+        <div className="mb-3">
+          <span className="inline-block bg-purple-500/30 border border-purple-400/50 text-purple-200 text-xs px-2 py-1 rounded">
+            ✓ Assigned to you
+          </span>
+        </div>
+      )}
+
       {/* Creator + Assigned */}
       <div className="flex justify-between text-xs text-gray-400 mb-3">
         <span>👤 {bug.user?.username}</span>
