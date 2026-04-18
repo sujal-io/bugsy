@@ -213,7 +213,6 @@ npm run dev
 - Activity Timeline (audit logs)
 - Real-time updates using WebSockets
 - Notifications system
-- File/image attachments
 - Analytics dashboard (team productivity insights)
 
 ---
