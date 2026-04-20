@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema(
       ref: "Team",
       default: null,
     },
+
+    teamHistory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
   },
   { timestamps: true },
 );

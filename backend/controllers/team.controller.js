@@ -25,8 +25,11 @@ export const createTeam = async (req, res) => {
       inviteCode,
     });
 
-    // Assign team to user
+    // Assign team to user and add to history
     user.team = team._id;
+    if (!user.teamHistory.includes(team._id)) {
+      user.teamHistory.push(team._id);
+    }
     await user.save();
 
     // Populate admin and members
@@ -72,8 +75,11 @@ export const joinTeam = async (req, res) => {
     team.members.push(req.user.id);
     await team.save();
 
-    // assign team to user
+    // assign team to user and add to history
     user.team = team._id;
+    if (!user.teamHistory.includes(team._id)) {
+      user.teamHistory.push(team._id);
+    }
     await user.save();
 
     // opulate for response
@@ -153,7 +159,7 @@ export const leaveTeam = async (req, res) => {
 
     await team.save();
 
-    // Clear user's team
+    // Clear user's team (but keep in history)
     user.team = null;
     await user.save();
 
@@ -165,5 +171,86 @@ export const leaveTeam = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ---------------- GET TEAM HISTORY ----------------
+export const getTeamHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: "teamHistory",
+        select: "name inviteCode admin members",
+        populate: [
+          { path: "admin", select: "username email" },
+          { path: "members", select: "username email" },
+        ],
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const teamHistory = user.teamHistory || [];
+
+    return res.status(200).json({ teamHistory });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ---------------- REJOIN TEAM ----------------
+export const rejoinTeam = async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    // Check if user already in a team
+    if (user.team) {
+      return res.status(400).json({
+        message: "User already in a team",
+      });
+    }
+
+    // Find team by invite code
+    const team = await Team.findOne({ inviteCode });
+
+    if (!team) {
+      return res.status(404).json({
+        message: "Invalid invite code",
+      });
+    }
+
+    // Check if team is in user's history
+    if (!user.teamHistory.includes(team._id)) {
+      return res.status(403).json({
+        message: "You are not allowed to rejoin this team",
+      });
+    }
+
+    // Add user back to team members
+    if (!team.members.includes(req.user.id)) {
+      team.members.push(req.user.id);
+    }
+    await team.save();
+
+    // Assign team to user
+    user.team = team._id;
+    await user.save();
+
+    // Populate for response
+    const populatedTeam = await Team.findById(team._id)
+      .populate("admin", "username email")
+      .populate("members", "username email");
+
+    res.status(200).json({
+      message: "Rejoined team successfully",
+      team: populatedTeam,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
