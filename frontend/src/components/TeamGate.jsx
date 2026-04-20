@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
+import TeamHistory from "./TeamHistory.jsx";
 
 function TeamGate({ onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
@@ -70,48 +71,51 @@ function TeamGate({ onTeamUpdated }) {
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-1">Create a Team</h2>
-        <p className="text-gray-300 text-sm mb-4">
-          Start a new workspace and invite your teammates.
-        </p>
+    <>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+          <h2 className="text-xl font-semibold mb-1">Create a Team</h2>
+          <p className="text-gray-300 text-sm mb-4">
+            Start a new workspace and invite your teammates.
+          </p>
 
-        <form onSubmit={createTeam} className="space-y-3">
-          <input
-            className="input input-bordered w-full bg-white/5"
-            placeholder="Team name"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            disabled={loading}
-          />
-          <button className="btn btn-primary w-full" disabled={loading}>
-            {loading ? "Working..." : "Create Team"}
-          </button>
-        </form>
+          <form onSubmit={createTeam} className="space-y-3">
+            <input
+              className="input input-bordered w-full bg-white/5"
+              placeholder="Team name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              disabled={loading}
+            />
+            <button className="btn btn-primary w-full" disabled={loading}>
+              {loading ? "Working..." : "Create Team"}
+            </button>
+          </form>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+          <h2 className="text-xl font-semibold mb-1">Join a Team</h2>
+          <p className="text-gray-300 text-sm mb-4">
+            Enter an invite code from your team admin.
+          </p>
+
+          <form onSubmit={joinTeam} className="space-y-3">
+            <input
+              className="input input-bordered w-full bg-white/5 uppercase tracking-widest"
+              placeholder="INVITE CODE"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              disabled={loading}
+            />
+            <button className="btn btn-secondary w-full" disabled={loading}>
+              {loading ? "Working..." : "Join Team"}
+            </button>
+          </form>
+        </div>
+
+        <TeamHistory onTeamUpdated={onTeamUpdated} />
       </div>
-
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-1">Join a Team</h2>
-        <p className="text-gray-300 text-sm mb-4">
-          Enter an invite code from your team admin.
-        </p>
-
-        <form onSubmit={joinTeam} className="space-y-3">
-          <input
-            className="input input-bordered w-full bg-white/5 uppercase tracking-widest"
-            placeholder="INVITE CODE"
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-            disabled={loading}
-          />
-          <button className="btn btn-secondary w-full" disabled={loading}>
-            {loading ? "Working..." : "Join Team"}
-          </button>
-        </form>
-      </div>
-
-    </div>
+    </>
   );
 }
 
