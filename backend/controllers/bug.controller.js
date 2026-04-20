@@ -245,7 +245,13 @@ export const getMyBugs = async (req, res, next) => {
   try {
     const { status, priority, search, page = 1, limit = 10, sort } = req.query;
 
-    let filter = { user: req.user.id };
+    const user = await User.findById(req.user.id);
+
+    if (!user?.team) {
+      return res.status(400).json({ message: "User is not part of any team" });
+    }
+
+    let filter = { user: req.user.id, team: user.team };
 
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
