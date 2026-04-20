@@ -34,6 +34,7 @@ This system goes beyond that by implementing:
 - Role system:
   - **Admin**
   - **Member**
+- View team history and rejoin previously joined teams for seamless continuity.  
 
 ---
 
