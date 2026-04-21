@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 import CommentSection from "./CommentSection.jsx";
+import ActivityTimeline from "./ActivityTimeline.jsx";
 
 function BugCard({ 
   bug, 
@@ -280,6 +281,11 @@ function BugCard({
           <CommentSection bugId={bug._id} />
         </div>
       )}
+
+      {/* Activity Timeline */}
+      <div className="mt-3">
+        <ActivityTimeline bugId={bug._id} />
+      </div>
 
       {/* AI Result */}
       {formatted && showAI && (
