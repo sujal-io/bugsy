@@ -8,6 +8,7 @@ import teamRoutes from "./routes/team.route.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import aiRoutes from "./routes/ai.route.js";
 import commentRoutes from "./routes/comment.route.js";
+import activityRoutes from "./routes/activity.route.js";
 
 dotenv.config({quiet: true});
 
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/activity", activityRoutes);
 
 // error middleware (always last)
 app.use(errorHandler);
