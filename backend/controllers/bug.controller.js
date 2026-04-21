@@ -1,6 +1,7 @@
 import Bug from "../models/bug.model.js";
 import Team from "../models/team.model.js";
 import User from "../models/user.model.js";
+import { logActivity } from "./activity.controller.js";
 
 export const createBug = async (req, res, next) => {
   try {
@@ -40,6 +41,14 @@ export const createBug = async (req, res, next) => {
       assignedTo: assignedTo || null,
     });
 
+    // Log activity
+    await logActivity(bug._id, req.user.id, "created bug");
+    
+    // If bug is assigned to someone, log that too
+    if (assignedTo) {
+      await logActivity(bug._id, req.user.id, "assigned bug", `Assigned to ${(await User.findById(assignedTo)).username}`);
+    }
+
     res.status(201).json(bug);
   } catch (error) {
     next(error);
@@ -76,6 +85,13 @@ export const updateBug = async (req, res, next) => {
     const isAdmin = String(team?.admin) === String(req.user.id);
     const isAssignedUser =
       bug.assignedTo && String(bug.assignedTo) === String(req.user.id);
+
+    // Track changes for activity logging
+    let assignmentChanged = false;
+    let assignmentDetails = "";
+    let statusChanged = false;
+    let solutionAdded = false;
+    let bugEdited = false;
 
     // ---------------- TEAM CHECK ----------------
     if (!bug?.team) {
@@ -122,6 +138,13 @@ export const updateBug = async (req, res, next) => {
         }
       }
 
+      // Check if assignment actually changed
+      if (String(bug.assignedTo || "") !== String(assignedTo || "")) {
+        assignmentChanged = true;
+        const assignedUser = assignedTo ? await User.findById(assignedTo) : null;
+        assignmentDetails = assignedUser ? `Assigned to ${assignedUser.username}` : "Unassigned";
+      }
+
       bug.assignedTo = assignedTo || null;
     }
 
@@ -151,6 +174,10 @@ export const updateBug = async (req, res, next) => {
         }
       }
 
+      if (bug.status !== status) {
+        statusChanged = true;
+      }
+
       bug.status = status;
     }
 
@@ -174,6 +201,7 @@ export const updateBug = async (req, res, next) => {
         bug.solution = solution;
         bug.status = "Fixed";
         bug.updatedBy = req.user.id;
+        solutionAdded = true;
       }
     }
 
@@ -185,11 +213,31 @@ export const updateBug = async (req, res, next) => {
         });
       }
 
-      if (title) bug.title = title;
-      if (description) bug.description = description;
+      if (title && title !== bug.title) {
+        bugEdited = true;
+        bug.title = title;
+      }
+      if (description && description !== bug.description) {
+        bugEdited = true;
+        bug.description = description;
+      }
     }
 
     const updatedBug = await bug.save();
+
+    // Log activities
+    if (assignmentChanged) {
+      await logActivity(bug._id, req.user.id, "assigned bug", assignmentDetails);
+    }
+    if (statusChanged) {
+      await logActivity(bug._id, req.user.id, "changed status", `Changed to ${bug.status}`);
+    }
+    if (solutionAdded) {
+      await logActivity(bug._id, req.user.id, "added solution");
+    }
+    if (bugEdited) {
+      await logActivity(bug._id, req.user.id, "edited bug");
+    }
 
     return res.status(200).json(updatedBug);
   } catch (error) {

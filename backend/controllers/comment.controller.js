@@ -1,4 +1,5 @@
 import Comment from "../models/comment.model.js";
+import { logActivity } from "./activity.controller.js";
 
 // Add comment
 export const addComment = async (req, res) => {
@@ -12,6 +13,9 @@ export const addComment = async (req, res) => {
     });
 
     const populated = await comment.populate("user", "username");
+
+    // Log activity
+    await logActivity(bugId, req.user.id, "commented on bug");
 
     res.json(populated);
   } catch (err) {
