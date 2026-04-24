@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
@@ -22,11 +23,12 @@ function BugCard({
   );
 
   const [showComments, setShowComments] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+
   const [aiResult, setAiResult] = useState("");
   const [showAI, setShowAI] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
-
-  const isCommentsOpen = showComments;
 
   // Permissions
   const isBugCreator = String(bug.user?._id) === String(currentUserId);
@@ -43,16 +45,18 @@ function BugCard({
     setAssignedUser(bug.assignedTo?._id || "");
     setAiResult("");
     setShowAI(false);
+    setShowDetails(false);
+    setShowTimeline(false);
   }, [bug._id]);
 
   useEffect(() => {
-    if (isCommentsOpen && commentRef.current) {
+    if (showComments && commentRef.current) {
       commentRef.current.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
-  }, [isCommentsOpen]);
+  }, [showComments]);
 
   const handleToggleComments = () => {
     setShowComments((prev) => !prev);
@@ -131,189 +135,209 @@ function BugCard({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 
+    rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all 
+    max-h-[420px] flex flex-col">
 
-      {/* Title */}
-      <h2 className="text-lg font-semibold mb-1">{bug.title}</h2>
-      <p className="text-gray-300 text-sm mb-4">{bug.description}</p>
+      {/* Scrollable Content */}
+      <div className="overflow-y-auto pr-1">
 
-      {/* Assigned to you badge */}
-      {isAssignedUser && (
-        <div className="mb-3">
-          <span className="inline-block bg-purple-500/30 border border-purple-400/50 text-purple-200 text-xs px-2 py-1 rounded">
+        {/* Title */}
+        <h2 className="text-lg font-semibold mb-1">{bug.title}</h2>
+
+        {/* Description (truncated) */}
+        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+          {bug.description}
+        </p>
+
+        {/* Assigned badge */}
+        {isAssignedUser && (
+          <span className="inline-block bg-purple-500/30 text-xs px-2 py-1 rounded mb-2">
             ✓ Assigned to you
           </span>
-        </div>
-      )}
-
-      {/* Creator + Assigned */}
-      <div className="flex justify-between text-xs text-gray-400 mb-3">
-        <span>👤 {bug.user?.username}</span>
-        <span>🎯 {bug.assignedTo?.username || "Unassigned"}</span>
-      </div>
-
-      {/* Status + Priority */}
-      <div className="flex justify-between items-center mb-4">
-        <span className={`${getStatusColor(bug.status)} px-3 py-1 rounded-full text-xs`}>
-          {bug.status}
-        </span>
-
-        <span className={`${getPriorityColor(bug.priority)} px-3 py-1 rounded-full text-xs`}>
-          {bug.priority}
-        </span>
-      </div>
-
-      {/* Solution */}
-      {bug.solution && (
-        <div className="bg-green-400/10 border border-green-400/20 p-3 rounded-lg mb-4">
-          <p className="text-green-300 text-xs font-semibold mb-1">Solution</p>
-          <p className="text-sm">{bug.solution}</p>
-        </div>
-      )}
-
-      {/* Assignment */}
-      {canChangeAssignment && (
-        <div className="border-t border-white/10 pt-3 pb-3 mb-3">
-          <label className="text-xs text-gray-400 block mb-1">Assign to:</label>
-          <select
-            className="w-full p-2 rounded bg-white/5 border border-white/20 text-white mb-2"
-            value={assignedUser}
-            onChange={(e) => setAssignedUser(e.target.value)}
-          >
-            <option className="text-black" value="">
-              Unassigned
-            </option>
-            {teamMembers?.map((m) => (
-              <option key={m._id} value={m._id} className="text-black">
-                {m.username}
-              </option>
-            ))}
-          </select>
-
-          <button 
-            onClick={handleUpdateAssignment} 
-            className="w-full bg-blue-500/90 hover:bg-blue-600 p-2 rounded-lg text-sm font-medium transition"
-          >
-            Update Assignment
-          </button>
-        </div>
-      )}
-
-      {/* Status */}
-      {canChangeStatus && (
-        <div className="border-t border-white/10 pt-3 pb-3 mb-3">
-          <label className="text-xs text-gray-400 block mb-1">Status:</label>
-          <select
-            className="w-full p-2 rounded bg-white/5 border border-white/20 text-white mb-2"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            {isBugCreator && <option className="text-black">Open</option>}
-            {(isAssignedUser || isBugCreator) && (
-              <option className="text-black">In Progress</option>
-            )}
-            {isAssignedUser && <option className="text-black">Fixed</option>}
-          </select>
-
-          <button 
-            onClick={handleUpdateStatus} 
-            className="w-full bg-blue-500/90 hover:bg-blue-600 p-2 rounded-lg text-sm font-medium transition"
-          >
-            Update Status
-          </button>
-        </div>
-      )}
-
-      {/* Solution Input */}
-      {canFixBug && (status === "Fixed" || bug.status === "Fixed") && (
-        <div className="border-t border-white/10 pt-3 pb-3 mb-3">
-          <label className="text-xs text-gray-400 block mb-2">
-            {bug.status === "Fixed" ? "Edit Solution:" : "Submit Solution:"}
-          </label>
-
-          <textarea
-            placeholder="Explain the fix..."
-            rows="3"
-            className="w-full p-2 rounded bg-white/5 border border-white/20 text-white resize-none focus:outline-none focus:ring-2 focus:ring-green-400"
-            value={solution}
-            onChange={(e) => setSolution(e.target.value)}
-          />
-
-          <button
-            onClick={handleSubmitSolution}
-            className="w-full mt-2 bg-green-500/90 hover:bg-green-600 p-2 rounded-lg text-sm font-medium transition"
-          >
-            Submit Solution
-          </button>
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="flex gap-3 mt-3">
-        {isBugCreator && (
-          <button
-            onClick={() => deleteBug(bug._id)}
-            className="flex-1 bg-red-500/90 hover:bg-red-600 p-2 rounded-lg text-sm font-medium transition"
-          >
-            Delete
-          </button>
         )}
 
-        <button
-          disabled={loadingAI}
-          onClick={getAISolution}
-          className="flex-1 bg-purple-500/90 hover:bg-purple-600 p-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
-        >
-          {loadingAI ? "Thinking..." : "✨ AI Help"}
-        </button>
-      </div>
-
-      {/* Comments */}
-      <button
-        onClick={handleToggleComments}
-        className="w-full mt-3 bg-white/5 hover:bg-white/10 p-2 rounded-lg text-sm transition"
-      >
-        💬 Comments {isCommentsOpen ? "▲" : "▼"}
-      </button>
-
-      {isCommentsOpen && (
-        <div ref={commentRef} className="mt-2">
-          <CommentSection bugId={bug._id} />
+        {/* Users */}
+        <div className="flex justify-between text-xs text-gray-400 mb-3">
+          <span>👤 {bug.user?.username}</span>
+          <span>🎯 {bug.assignedTo?.username || "Unassigned"}</span>
         </div>
-      )}
 
-      {/* Activity Timeline */}
-      <div className="mt-3">
-        <ActivityTimeline bugId={bug._id} />
-      </div>
+        {/* Status + Priority */}
+        <div className="flex justify-between mb-3">
+          <span className={`${getStatusColor(bug.status)} px-3 py-1 rounded-full text-xs`}>
+            {bug.status}
+          </span>
 
-      {/* AI Result */}
-      {formatted && showAI && (
-        <div className="mt-3 p-4 bg-white/10 rounded relative">
+          <span className={`${getPriorityColor(bug.priority)} px-3 py-1 rounded-full text-xs`}>
+            {bug.priority}
+          </span>
+        </div>
+
+        {/* Collapsible Solution */}
+        {bug.solution && (
+          <details className="mb-3">
+            <summary className="cursor-pointer text-green-300 text-xs">
+              View Solution
+            </summary>
+            <div className="mt-2 bg-green-400/10 p-2 rounded text-sm">
+              {bug.solution}
+            </div>
+          </details>
+        )}
+
+        {/* Buttons */}
+        <div className="flex gap-3 mt-2">
+          {isBugCreator && (
+            <button
+              onClick={() => deleteBug(bug._id)}
+              className="flex-1 bg-red-500/90 hover:bg-red-600 p-2 rounded-lg text-sm"
+            >
+              Delete
+            </button>
+          )}
+
           <button
-            onClick={() => setShowAI(false)}
-            className="absolute right-2 top-2"
+            disabled={loadingAI}
+            onClick={getAISolution}
+            className="flex-1 bg-purple-500/90 hover:bg-purple-600 p-2 rounded-lg text-sm"
           >
-            ✖
+            {loadingAI ? "Thinking..." : "✨ AI Help"}
           </button>
-
-          <p className="text-purple-300 font-semibold mb-2">
-            🤖 AI Suggestion
-          </p>
-
-          <p className="text-blue-300">Cause</p>
-          <p>{formatted.cause}</p>
-
-          <p className="text-green-300 mt-2">Fix</p>
-          <ul className="list-disc ml-5">
-            {formatted.fixes.map((f, i) => (
-              <li key={i}>{f}</li>
-            ))}
-          </ul>
         </div>
-      )}
+
+        {/* Comments */}
+        <button
+          onClick={handleToggleComments}
+          className="w-full mt-3 bg-white/5 p-2 rounded-lg text-sm"
+        >
+          💬 Comments {showComments ? "▲" : "▼"}
+        </button>
+
+        {showComments && (
+          <div ref={commentRef} className="mt-2">
+            <CommentSection bugId={bug._id} />
+          </div>
+        )}
+
+        {/* DETAILS TOGGLE */}
+        <button
+          onClick={() => setShowDetails(prev => !prev)}
+          className="w-full mt-3 bg-white/5 p-2 rounded-lg text-sm"
+        >
+          {showDetails ? "▲ Hide Details" : "▼ View Details"}
+        </button>
+
+        {showDetails && (
+          <>
+            {/* Assignment */}
+            {canChangeAssignment && (
+              <div className="mt-3">
+                <select
+                  className="w-full p-2 rounded bg-white/5 text-white mb-2"
+                  value={assignedUser}
+                  onChange={(e) => setAssignedUser(e.target.value)}
+                >
+                  <option className="text-black" value="">
+                    Unassigned
+                  </option>
+                  {teamMembers?.map((m) => (
+                    <option key={m._id} value={m._id} className="text-black">
+                      {m.username}
+                    </option>
+                  ))}
+                </select>
+
+                <button 
+                  onClick={handleUpdateAssignment} 
+                  className="w-full bg-blue-500 p-2 rounded"
+                >
+                  Update Assignment
+                </button>
+              </div>
+            )}
+
+            {/* Status */}
+            {canChangeStatus && (
+              <div className="mt-3">
+                <select
+                  className="w-full p-2 rounded bg-white/5 text-white mb-2"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                >
+                  <option className="text-black">Open</option>
+                  <option className="text-black">In Progress</option>
+                  <option className="text-black">Fixed</option>
+                </select>
+
+                <button 
+                  onClick={handleUpdateStatus} 
+                  className="w-full bg-blue-500 p-2 rounded"
+                >
+                  Update Status
+                </button>
+              </div>
+            )}
+
+            {/* Solution Input */}
+            {canFixBug && (status === "Fixed" || bug.status === "Fixed") && (
+              <div className="mt-3">
+                <textarea
+                  placeholder="Explain the fix..."
+                  rows="3"
+                  className="w-full p-2 rounded bg-white/5 text-white"
+                  value={solution}
+                  onChange={(e) => setSolution(e.target.value)}
+                />
+
+                <button
+                  onClick={handleSubmitSolution}
+                  className="w-full mt-2 bg-green-500 p-2 rounded"
+                >
+                  Submit Solution
+                </button>
+              </div>
+            )}
+
+            {/* Activity Timeline */}
+            <button
+              onClick={() => setShowTimeline(prev => !prev)}
+              className="text-xs text-gray-400 mt-3"
+            >
+              Activity {showTimeline ? "▲" : "▼"}
+            </button>
+
+            {showTimeline && (
+              <div className="mt-2 max-h-40 overflow-y-auto">
+                <ActivityTimeline bugId={bug._id} />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* AI Result */}
+        {formatted && showAI && (
+          <div className="mt-3 p-3 bg-white/10 rounded">
+            <p className="text-purple-300 text-sm font-semibold mb-1">
+              🤖 AI Suggestion
+            </p>
+
+            <p className="text-blue-300 text-xs">Cause</p>
+            <p className="text-sm">{formatted.cause}</p>
+
+            <p className="text-green-300 mt-2 text-xs">Fix</p>
+            <ul className="list-disc ml-5 text-sm">
+              {formatted.fixes.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
 
 export default BugCard;
+
