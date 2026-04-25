@@ -269,6 +269,19 @@ npm run dev
 
 ---
 
+## 🌐 Deployment
+
+The application is fully deployed and accessible online:
+
+* **Frontend** deployed on Vercel
+* **Backend API** deployed on Render
+
+```bash
+Frontend: https://your-app.vercel.app  
+Backend: https://your-api.onrender.com
+```
+
+
 ## 🤝 Contributing
 
 Contributions are welcome!
