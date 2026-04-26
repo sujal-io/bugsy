@@ -24,6 +24,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Bugsy API is running 🚀");
+});
+
+
 // routes
 app.use("/api/bugs", bugRoutes);
 app.use("/api/auth", authRoutes);
