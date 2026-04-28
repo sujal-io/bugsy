@@ -277,8 +277,8 @@ The application is fully deployed and accessible online:
 * **Backend API** deployed on Render
 
 ```bash
-Frontend: https://your-app.vercel.app  
-Backend: https://your-api.onrender.com
+Frontend: https://bugsy-peach.vercel.app  
+Backend: https://bugsy-backend.onrender.com
 ```
 
 
