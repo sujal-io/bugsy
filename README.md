@@ -1,4 +1,4 @@
-#🐞 Bugsy — Catch Bugs Before Users Do
+🐞 Bugsy — Catch Bugs Before Users Do
 
 A **production-ready MERN stack application** designed to help teams **track, manage, and resolve bugs collaboratively** with structured workflows, role-based access control, AI-assisted debugging, and full activity tracking.
 
