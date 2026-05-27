@@ -1,6 +1,7 @@
 import Comment from "../models/comment.model.js";
 import { logActivity } from "./activity.controller.js";
-
+import { io } from "../server.js";
+import Bug from "../models/bug.model.js";
 // Add comment
 export const addComment = async (req, res) => {
   try {
@@ -16,6 +17,13 @@ export const addComment = async (req, res) => {
 
     // Log activity
     await logActivity(bugId, req.user.id, "commented on bug");
+
+    // Get bug to access team
+    const bug = await Bug.findById(bugId);
+
+    // Realtime emit
+    io.to(bug.team.toString()).emit("commentAdded", populated);
+
 
     res.json(populated);
   } catch (err) {
