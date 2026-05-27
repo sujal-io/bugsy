@@ -33,6 +33,18 @@ function Dashboard() {
     };
   }, [user?.team]);
 
+  useEffect(() => {
+    socket.on("bugCreated", (newBug) => {
+      console.log("Realtime bug:", newBug);
+  
+      setBugs((prev) => [newBug, ...prev]);
+    });
+  
+    return () => {
+      socket.off("bugCreated");
+    };
+  }, []);
+
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);

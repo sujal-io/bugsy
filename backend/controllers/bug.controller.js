@@ -2,6 +2,7 @@ import Bug from "../models/bug.model.js";
 import Team from "../models/team.model.js";
 import User from "../models/user.model.js";
 import { logActivity } from "./activity.controller.js";
+import { io } from "../server.js";
 
 export const createBug = async (req, res, next) => {
   try {
@@ -49,6 +50,8 @@ export const createBug = async (req, res, next) => {
       await logActivity(bug._id, req.user.id, "assigned bug", `Assigned to ${(await User.findById(assignedTo)).username}`);
     }
 
+    io.to(user.team.toString()).emit("bugCreated", bug);
+    
     res.status(201).json(bug);
   } catch (error) {
     next(error);
