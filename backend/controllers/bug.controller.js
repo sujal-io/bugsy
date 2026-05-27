@@ -2,6 +2,7 @@ import Bug from "../models/bug.model.js";
 import Team from "../models/team.model.js";
 import User from "../models/user.model.js";
 import { logActivity } from "./activity.controller.js";
+import { io } from "../server.js";
 
 export const createBug = async (req, res, next) => {
   try {
@@ -43,11 +44,13 @@ export const createBug = async (req, res, next) => {
 
     // Log activity
     await logActivity(bug._id, req.user.id, "created bug");
-    
+
     // If bug is assigned to someone, log that too
     if (assignedTo) {
       await logActivity(bug._id, req.user.id, "assigned bug", `Assigned to ${(await User.findById(assignedTo)).username}`);
     }
+
+    io.to(user.team.toString()).emit("bugCreated", bug);
 
     res.status(201).json(bug);
   } catch (error) {
@@ -225,6 +228,13 @@ export const updateBug = async (req, res, next) => {
 
     const updatedBug = await bug.save();
 
+    const populatedBug = await Bug.findById(bug._id)
+      .populate("user", "username email")
+      .populate("updatedBy", "username email")
+      .populate("assignedTo", "username email");
+
+    io.to(bug.team.toString()).emit("bugUpdated", populatedBug);
+
     // Log activities
     if (assignmentChanged) {
       await logActivity(bug._id, req.user.id, "assigned bug", assignmentDetails);
@@ -280,7 +290,12 @@ export const deleteBug = async (req, res, next) => {
       });
     }
 
+    const deletedBugId = bug._id;
+    const teamId = bug.team.toString();
+
     await bug.deleteOne();
+
+    io.to(teamId).emit("bugDeleted", deletedBugId);
 
     return res.status(200).json({ message: "Bug deleted successfully" });
   } catch (error) {

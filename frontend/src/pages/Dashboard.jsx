@@ -33,6 +33,48 @@ function Dashboard() {
     };
   }, [user?.team]);
 
+  useEffect(() => {
+    socket.on("bugCreated", (newBug) => {
+      console.log("Realtime bug:", newBug);
+  
+      setBugs((prev) => [newBug, ...prev]);
+    });
+  
+    return () => {
+      socket.off("bugCreated");
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("bugUpdated", (updatedBug) => {
+      console.log("Realtime update:", updatedBug);
+  
+      setBugs((prev) =>
+        prev.map((bug) =>
+          bug._id === updatedBug._id ? updatedBug : bug
+        )
+      );
+    });
+  
+    return () => {
+      socket.off("bugUpdated");
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("bugDeleted", (deletedBugId) => {
+      console.log("Realtime delete:", deletedBugId);
+  
+      setBugs((prev) =>
+        prev.filter((bug) => bug._id !== deletedBugId)
+      );
+    });
+  
+    return () => {
+      socket.off("bugDeleted");
+    };
+  }, []);
+
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);

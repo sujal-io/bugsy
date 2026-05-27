@@ -4,6 +4,7 @@ import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 import CommentSection from "./CommentSection.jsx";
 import ActivityTimeline from "./ActivityTimeline.jsx";
+import { socket } from "../lib/socket";
 
 function BugCard({ 
   bug, 
@@ -57,6 +58,24 @@ function BugCard({
       });
     }
   }, [showComments]);
+
+  useEffect(() => {
+    socket.on("commentAdded", (newComment) => {
+      if (newComment.bug === bug._id) {
+        console.log("Realtime comment:", newComment);
+  
+        window.dispatchEvent(
+          new CustomEvent("new-comment", {
+            detail: newComment,
+          })
+        );
+      }
+    });
+  
+    return () => {
+      socket.off("commentAdded");
+    };
+  }, [bug._id]);
 
   const handleToggleComments = () => {
     setShowComments((prev) => !prev);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiRequest } from "../lib/apiClient";
+import { socket } from "../lib/socket";
 
 /**
  * Formats a date to a relative time string (e.g., "2 mins ago")
@@ -68,6 +69,20 @@ export default function ActivityTimeline({ bugId }) {
 
   useEffect(() => {
     fetchActivities();
+  }, [bugId]);
+
+  useEffect(() => {
+    socket.on("activityAdded", (newActivity) => {
+      if (newActivity.bug === bugId) {
+        console.log("Realtime activity:", newActivity);
+  
+        setActivities((prev) => [newActivity, ...prev]);
+      }
+    });
+  
+    return () => {
+      socket.off("activityAdded");
+    };
   }, [bugId]);
 
   const fetchActivities = async () => {

@@ -20,6 +20,25 @@ function CommentSection({ bugId }) {
     fetchComments();
   }, [bugId]);
 
+  useEffect(() => {
+    const handleRealtimeComment = (event) => {
+      const newComment = event.detail;
+  
+      if (newComment.bug === bugId) {
+        setComments((prev) => [...prev, newComment]);
+      }
+    };
+  
+    window.addEventListener("new-comment", handleRealtimeComment);
+  
+    return () => {
+      window.removeEventListener(
+        "new-comment",
+        handleRealtimeComment
+      );
+    };
+  }, [bugId]);
+
   const handleAdd = async () => {
     if (!text.trim()) return;
 
