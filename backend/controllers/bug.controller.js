@@ -44,7 +44,7 @@ export const createBug = async (req, res, next) => {
 
     // Log activity
     await logActivity(bug._id, req.user.id, "created bug");
-    
+
     // If bug is assigned to someone, log that too
     if (assignedTo) {
       await logActivity(bug._id, req.user.id, "assigned bug", `Assigned to ${(await User.findById(assignedTo)).username}`);
@@ -229,11 +229,11 @@ export const updateBug = async (req, res, next) => {
     const updatedBug = await bug.save();
 
     const populatedBug = await Bug.findById(bug._id)
-  .populate("user", "username email")
-  .populate("updatedBy", "username email")
-  .populate("assignedTo", "username email");
+      .populate("user", "username email")
+      .populate("updatedBy", "username email")
+      .populate("assignedTo", "username email");
 
-io.to(bug.team.toString()).emit("bugUpdated", populatedBug);
+    io.to(bug.team.toString()).emit("bugUpdated", populatedBug);
 
     // Log activities
     if (assignmentChanged) {
@@ -290,7 +290,12 @@ export const deleteBug = async (req, res, next) => {
       });
     }
 
+    const deletedBugId = bug._id;
+    const teamId = bug.team.toString();
+
     await bug.deleteOne();
+
+    io.to(teamId).emit("bugDeleted", deletedBugId);
 
     return res.status(200).json({ message: "Bug deleted successfully" });
   } catch (error) {

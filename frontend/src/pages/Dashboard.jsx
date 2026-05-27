@@ -61,6 +61,20 @@ function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("bugDeleted", (deletedBugId) => {
+      console.log("Realtime delete:", deletedBugId);
+  
+      setBugs((prev) =>
+        prev.filter((bug) => bug._id !== deletedBugId)
+      );
+    });
+  
+    return () => {
+      socket.off("bugDeleted");
+    };
+  }, []);
+
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
