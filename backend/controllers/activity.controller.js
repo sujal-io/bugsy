@@ -1,4 +1,6 @@
 import Activity from "../models/activity.model.js";
+import Bug from "../models/bug.model.js";
+import { io } from "../server.js";
 
 /**
  * Helper function to log activity
@@ -9,12 +11,22 @@ import Activity from "../models/activity.model.js";
  */
 export const logActivity = async (bugId, userId, action, details = null) => {
   try {
-    await Activity.create({
+    const activity = await Activity.create({
       bug: bugId,
       user: userId,
       action,
       details,
     });
+    
+    const populatedActivity = await Activity.findById(activity._id)
+      .populate("user", "username email");
+    
+    const bug = await Bug.findById(bugId);
+    
+    io.to(bug.team.toString()).emit(
+      "activityAdded",
+      populatedActivity
+    );
   } catch (error) {
     console.error("Error logging activity:", error.message);
     // Don't throw - activity logging should not block the main operation
