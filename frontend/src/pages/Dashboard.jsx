@@ -9,8 +9,30 @@ import { useToast } from "../components/ToastProvider.jsx";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../lib/apiClient";
+import { socket } from "../lib/socket";
 
 function Dashboard() {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    socket.connect();
+  
+    socket.on("connect", () => {
+      console.log("CONNECTED:", socket.id);
+  
+      if (user?.team) {
+        socket.emit("joinTeam", user.team);
+  
+        console.log("Joined room:", user.team);
+      }
+    });
+  
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?.team]);
+
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,9 +50,6 @@ function Dashboard() {
 
   // Pagination
   const [page, setPage] = useState(1);
-
-  // User
-  const user = JSON.parse(localStorage.getItem("user"));
 
   // Logout
   const handleLogout = () => {
