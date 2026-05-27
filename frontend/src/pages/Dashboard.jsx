@@ -45,6 +45,22 @@ function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("bugUpdated", (updatedBug) => {
+      console.log("Realtime update:", updatedBug);
+  
+      setBugs((prev) =>
+        prev.map((bug) =>
+          bug._id === updatedBug._id ? updatedBug : bug
+        )
+      );
+    });
+  
+    return () => {
+      socket.off("bugUpdated");
+    };
+  }, []);
+
   // Main data
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);

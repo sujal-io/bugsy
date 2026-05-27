@@ -51,7 +51,7 @@ export const createBug = async (req, res, next) => {
     }
 
     io.to(user.team.toString()).emit("bugCreated", bug);
-    
+
     res.status(201).json(bug);
   } catch (error) {
     next(error);
@@ -227,6 +227,13 @@ export const updateBug = async (req, res, next) => {
     }
 
     const updatedBug = await bug.save();
+
+    const populatedBug = await Bug.findById(bug._id)
+  .populate("user", "username email")
+  .populate("updatedBy", "username email")
+  .populate("assignedTo", "username email");
+
+io.to(bug.team.toString()).emit("bugUpdated", populatedBug);
 
     // Log activities
     if (assignmentChanged) {
