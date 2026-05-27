@@ -9,12 +9,30 @@ import errorHandler from "./middlewares/error.middleware.js";
 import aiRoutes from "./routes/ai.route.js";
 import commentRoutes from "./routes/comment.route.js";
 import activityRoutes from "./routes/activity.route.js";
+import http from "http";
+import { Server } from "socket.io";
 
 dotenv.config({quiet: true});
 
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
 
 const PORT = process.env.PORT || 5001;
 
@@ -40,7 +58,6 @@ app.use("/api/activity", activityRoutes);
 // error middleware (always last)
 app.use(errorHandler);
 
-// start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
