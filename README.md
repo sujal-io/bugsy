@@ -1,22 +1,24 @@
-## 🐞 Bugsy — Catch Bugs Before Users Do
+# 🐞 Bugsy — Catch Bugs Before Users Do
 
-A **production-ready MERN stack application** designed to help teams **track, manage, and resolve bugs collaboratively** with structured workflows, role-based access control, AI-assisted debugging, and full activity tracking.
+A **production-ready MERN stack application** designed to help teams **track, manage, and resolve bugs collaboratively** through structured workflows, role-based access control, real-time collaboration, AI-assisted debugging, and complete activity tracking.
 
 ---
 
 ## 🚀 Why This Project Matters
 
-Most beginner bug trackers are just CRUD apps.
+Most beginner bug trackers stop at CRUD functionality.
 
-This system goes beyond that by implementing:
+Bugsy goes beyond that by implementing:
 
 * **Real-world workflow constraints** (who can update what)
 * **Team-based data isolation**
 * **Role-based permissions**
-* **AI-assisted debugging with fallback reliability**
-* **Audit logging system (activity timeline)**
+* **Real-time collaboration**
+* **AI-assisted debugging**
+* **Comprehensive audit logging**
+* **Activity tracking and accountability**
 
-👉 Built to simulate how actual engineering teams manage bugs.
+👉 Built to simulate how actual software engineering teams manage bugs throughout their lifecycle.
 
 ---
 
@@ -25,131 +27,180 @@ This system goes beyond that by implementing:
 ### 🔐 Authentication & Security
 
 * Secure signup/login using **JWT authentication**
-* Persistent sessions via localStorage
-* Protected routes & middleware-based authorization
+* Protected routes and middleware-based authorization
+* Persistent user sessions
+* Team-specific access control
 
 ---
 
 ### 👥 Team Collaboration System
 
-* Create or join teams using **invite codes**
-* **Team-scoped bug visibility**
-* Role system:
+* Create teams and invite members using unique invite codes
+* Join existing teams seamlessly
+* Team-scoped bug visibility and collaboration
+* Role-based access system:
 
   * **Admin**
   * **Member**
-* View team history and rejoin previously joined teams for seamless continuity
+* Team history and rejoining support
 
 ---
 
 ### 🐛 Bug Lifecycle Management
 
-* Create bugs with:
+Create and manage bugs with:
 
-  * Title, description, priority
-* Organized views:
+* Title
+* Description
+* Priority
+* Status
+* Assignee
 
-  * My Bugs
-  * Team Bugs
-  * Assigned to Me
-* Status workflow:
+Supported workflow:
 
-  ```
-  Open → In Progress → Fixed
-  ```
-* Deletion restricted to **creator/admin only**
+```text
+Open → In Progress → Fixed
+```
+
+Features include:
+
+* My Bugs
+* Team Bugs
+* Assigned To Me
+* Creator/Admin-only deletion
 
 ---
 
 ### 🎯 Assignment & Ownership
 
 * Assign bugs to team members
-* Enforces **clear ownership**
-* Only authorized users can assign bugs
+* Clear ownership and accountability
+* Assignment tracking throughout the bug lifecycle
+* Authorization checks before assignment updates
 
 ---
 
-### 🔒 Role-Based Workflow Control
+### 🔒 Role-Based Workflow Control (RBAC)
 
-Implements **strict real-world constraints**:
+Implements realistic engineering constraints:
 
-* Only **assigned user** can:
+#### Assigned User Can:
 
-  * Mark bug as Fixed
-  * Add solution
-* Only **creator** can:
+* Mark bug as Fixed
+* Add bug solution
 
-  * Edit bug details
-* Prevents invalid or unrealistic state transitions
+#### Creator Can:
+
+* Edit bug details
+
+#### Admin Can:
+
+* Manage team-level actions
+
+This prevents unrealistic state transitions and enforces ownership.
 
 ---
 
-### 🧠 AI-Powered Bug Assistance
+### ⚡ Real-Time Collaboration
 
-* AI-generated debugging suggestions using **OpenRouter**
-* Structured output:
+Built using **Socket.IO** and team-specific rooms.
 
-  * Root cause
-  * Step-by-step fix
-* **Fallback mechanism** ensures reliability if AI fails
-* Clean UI with:
+Instant synchronization for:
 
-  * Copy to clipboard
-  * Dismiss option
-  * Structured formatting
+* Bug creation
+* Bug updates
+* Bug deletion
+* Comments
+* Activity timeline events
+
+Benefits:
+
+* No manual refresh required
+* Team-wide visibility of changes
+* Event-driven architecture
+* Team-isolated realtime communication
+
+👉 Implemented using Socket.IO rooms to ensure only relevant team members receive updates.
 
 ---
 
 ### 💬 Collaborative Comments
 
-* Threaded discussion under each bug
-* Enables team communication
+* Discussion threads for each bug
+* Team communication directly within bug reports
 * Collapsible UI for better readability
+* Real-time comment synchronization
 
 ---
 
 ### 📜 Activity Timeline (Audit Logs)
 
-* Tracks **who did what and when** for every bug
-* Logs key actions such as:
+Every important action is automatically tracked.
 
-  * Bug created
-  * Bug assigned
-  * Status changed
-  * Solution added
-  * Comments added
-* Displays a **chronological history per bug**
-* Helps in:
+Examples:
 
-  * Debugging workflows
-  * Team accountability
-  * Understanding bug lifecycle
+* Bug created
+* Bug assigned
+* Status updated
+* Solution added
+* Comment added
+* Bug fixed
 
-👉 Inspired by real-world tools like Jira and GitHub Issues.
+Benefits:
+
+* Accountability
+* Auditability
+* Debugging workflow visibility
+* Complete bug history tracking
+
+Inspired by professional tools like Jira and GitHub Issues.
+
+---
+
+### 🧠 AI-Powered Bug Assistance
+
+Integrated using **OpenRouter**.
+
+Provides:
+
+* Potential root causes
+* Debugging suggestions
+* Step-by-step fix recommendations
+
+Additional Features:
+
+* Structured response formatting
+* Copy-to-clipboard support
+* Dismissible UI
+* Fallback handling when AI requests fail
 
 ---
 
 ### 🎛️ Advanced Filtering & UX
 
-* Filter by:
+Filter bugs by:
 
-  * Status
-  * Priority
-  * Search (title)
-* Sorting:
+* Status
+* Priority
+* Title search
 
-  * Newest / Oldest
-* Pagination for scalability
+Additional capabilities:
+
+* Sorting (Newest / Oldest)
+* Pagination
+* Responsive layouts
+* Optimized user experience
 
 ---
 
 ### 🎨 UI/UX Highlights
 
-* Modern **glassmorphism-inspired design**
-* Responsive layout
-* Toast notifications (success/error)
-* Skeleton loaders & loading states
-* Clean, minimal, distraction-free interface
+* Modern glassmorphism-inspired design
+* Fully responsive interface
+* Loading states and skeleton loaders
+* Toast notifications
+* Clean and distraction-free workflow
+* Reusable React component architecture
 
 ---
 
@@ -157,62 +208,111 @@ Implements **strict real-world constraints**:
 
 ### Frontend
 
-* **React.js**
-* **Tailwind CSS + DaisyUI**
+* React.js
+* Tailwind CSS
+* DaisyUI
 * React Router
+* Socket.IO Client
 * Custom API abstraction layer
 
 ### Backend
 
-* **Node.js + Express.js**
-* **MongoDB + Mongoose**
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* Socket.IO
 
 ### Integrations
 
 * JWT Authentication
-* OpenRouter (AI)
-* LocalStorage (session persistence)
+* OpenRouter AI
+* LocalStorage
+* Render Deployment
+* Vercel Deployment
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 /backend
-  /controllers   → Business logic
-  /models        → Database schemas
-  /routes        → API endpoints
-  /middlewares   → Auth & access control
+ ├── controllers
+ ├── models
+ ├── routes
+ ├── middlewares
+ ├── config
+ └── server.js
 
 /frontend
-  /components    → Reusable UI components
-  /pages         → Route-level views
-  /lib           → API client & utilities
+ ├── components
+ ├── pages
+ ├── lib
+ ├── hooks
+ └── main.jsx
 ```
 
 ---
 
-## ⚙️ Setup Instructions
+## 🧠 System Design Highlights
 
-### 1. Clone Repository
+* Role-Based Access Control (RBAC)
+* Team-based Multi-Tenancy
+* Controlled Workflow State Transitions
+* Real-Time Event-Driven Architecture
+* Activity Logging & Audit Trail
+* Modular Backend Architecture
+* Reusable Frontend Components
+* AI + Fallback Hybrid Architecture
+* Socket.IO Team Rooms
+
+---
+
+## 🔄 Application Flow
+
+1. User signs up or logs in
+2. User creates or joins a team
+3. User creates a bug
+4. Bug is assigned to a team member
+5. Activity is automatically logged
+6. Team members collaborate through comments
+7. Updates are synchronized in real time
+8. Assigned user fixes the bug and adds a solution
+9. Complete activity history remains available through the timeline
+
+---
+
+## 🌐 Deployment
+
+### Frontend
+
+https://bugsy-peach.vercel.app
+
+### Backend
+
+https://bugsy-backend.onrender.com
+
+---
+
+## ⚙️ Local Setup
+
+### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/bug-tracker.git
-cd bug-tracker
+git clone https://github.com/your-username/bugsy.git
+cd bugsy
 ```
 
----
-
-### 2. Backend Setup
+### Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-Create `.env`:
+Create `.env`
 
-```
+```env
 PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret
@@ -225,9 +325,7 @@ Run:
 npm run dev
 ```
 
----
-
-### 3. Frontend Setup
+### Frontend Setup
 
 ```bash
 cd frontend
@@ -237,61 +335,32 @@ npm run dev
 
 ---
 
-## 🧠 System Design Highlights
-
-* **Role-Based Access Control (RBAC)**
-* **Team-based multi-tenancy**
-* **Controlled state transitions (finite workflow)**
-* **Activity logging system (audit trail for all actions)**
-* **Separation of concerns (modular backend + reusable frontend)**
-* **AI + fallback hybrid architecture**
-
----
-
-## 🔄 Application Flow
-
-1. User authenticates and joins a team
-2. Creates a bug with required details
-3. Bug is assigned to a team member
-4. Assigned user works and updates status
-5. **All actions are recorded in Activity Timeline**
-6. Bug is marked as **Fixed** with solution
-7. Team collaborates via comments and tracks full history
-
----
-
 ## 📌 Future Enhancements
 
-* Real-time updates using WebSockets
-* Notifications system
-* Analytics dashboard (team productivity insights)
-* File/image attachments for bugs
+* Real-time notification system
+* User presence indicators (online/offline)
+* Email notifications
+* Analytics dashboard
+* File & image attachments
+* Advanced search capabilities
+* Team productivity insights
 
 ---
-
-## 🌐 Deployment
-
-The application is fully deployed and accessible online:
-
-* **Frontend** deployed on Vercel
-* **Backend API** deployed on Render
-
-```bash
-Frontend: https://bugsy-peach.vercel.app  
-Backend: https://bugsy-backend.onrender.com
-```
-
 
 ## 🤝 Contributing
 
-Contributions are welcome!
-Feel free to fork and submit a pull request.
+Contributions are welcome.
+
+Feel free to fork the repository and submit pull requests.
 
 ---
 
 ## 🙌 Acknowledgements
 
-* OpenRouter (AI API)
-* Tailwind CSS & DaisyUI
+* OpenRouter
+* Socket.IO
 * MongoDB Atlas
-
+* Tailwind CSS
+* DaisyUI
+* Render
+* Vercel
