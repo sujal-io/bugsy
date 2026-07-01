@@ -1,3 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-background text-content-primary font-sans text-body;
+  }
+
+  ::placeholder {
+    @apply text-content-muted;
+  }
+}
+
+@layer components {
+  /* Typography */
+  .ui-display {
+    @apply text-display text-content-primary;
+  }
+
+  .ui-heading {
+    @apply text-heading text-content-primary;
+  }
+
+  .ui-subheading {
+    @apply text-subheading text-content-secondary;
+  }
+
+  .ui-body {
+    @apply text-body text-content-primary;
+  }
+
+  .ui-caption {
+    @apply text-caption text-content-secondary;
+  }
+
+  /* Focus ring */
+  .ui-focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Buttons — ui- prefix avoids DaisyUI .btn conflicts */
+  .ui-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-btn-md font-medium
+           transition-all duration-150 ease-out
+           shadow-button
+           disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none
+           active:scale-[0.98];
+  }
+
+  .ui-btn-primary {
+    @apply ui-btn bg-primary text-white
+           hover:bg-primary-hover hover:shadow-card-hover
+           ui-focus-ring;
+  }
+
+  .ui-btn-secondary {
+    @apply ui-btn bg-surface text-content-primary border border-border
+           hover:bg-surface-hover hover:border-border-strong
+           ui-focus-ring;
+  }
+
+  .ui-btn-ghost {
+    @apply ui-btn bg-transparent text-content-secondary shadow-none
+           hover:bg-white/[0.04] hover:text-content-primary
+           ui-focus-ring;
+  }
+
+  .ui-btn-danger {
+    @apply ui-btn bg-danger text-white
+           hover:bg-red-600 hover:shadow-card-hover
+           ui-focus-ring;
+  }
+
+  .ui-btn-icon {
+    @apply inline-flex items-center justify-center rounded-xl p-2.5
+           text-content-secondary transition-all duration-150
+           hover:bg-white/[0.06] hover:text-content-primary
+           ui-focus-ring active:scale-[0.98]
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .ui-btn-sm {
+    @apply px-3 py-2 text-btn-sm;
+  }
+
+  .ui-btn-loading {
+    @apply relative pointer-events-none;
+  }
+
+  /* Inputs */
+  .ui-input {
+    @apply w-full h-10 rounded-xl px-3.5 text-body
+           bg-background-secondary border border-border
+           text-content-primary placeholder:text-content-muted
+           transition-all duration-150
+           hover:border-border-strong
+           focus:outline-none focus:border-primary focus:shadow-focus
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border;
+  }
+
+  .ui-input-lg {
+    @apply h-11 px-4;
+  }
+
+  .ui-textarea {
+    @apply ui-input min-h-[88px] py-3 resize-none;
+  }
+
+  .ui-select {
+    @apply ui-input appearance-none cursor-pointer pr-10;
+  }
+
+  /* Cards */
+  .ui-card {
+    @apply rounded-xl border border-border bg-surface p-5 shadow-card
+           transition-all duration-150;
+  }
+
+  .ui-card-interactive {
+    @apply ui-card hover:border-border-strong hover:shadow-card-hover hover:bg-surface-hover;
+  }
+
+  .ui-card-header {
+    @apply mb-4;
+  }
+
+  .ui-card-title {
+    @apply ui-heading;
+  }
+
+  .ui-card-description {
+    @apply ui-caption mt-1;
+  }
+
+  /* Badges */
+  .ui-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-medium
+           border border-transparent;
+  }
+
+  /* Modals */
+  .ui-modal-backdrop {
+    @apply fixed inset-0 z-40 bg-black/60 backdrop-blur-modal;
+  }
+
+  .ui-modal-panel {
+    @apply relative z-50 w-full max-w-md rounded-xl border border-border
+           bg-surface p-6 shadow-modal;
+  }
+
+  .ui-modal-title {
+    @apply ui-heading mb-2;
+  }
+
+  .ui-modal-body {
+    @apply ui-body text-content-secondary mb-6;
+  }
+
+  .ui-modal-actions {
+    @apply flex items-center justify-end gap-3;
+  }
+
+  /* Tables */
+  .ui-table-wrap {
+    @apply overflow-hidden rounded-xl border border-border bg-surface shadow-card;
+  }
+
+  .ui-table {
+    @apply w-full text-left text-body;
+  }
+
+  .ui-table thead {
+    @apply bg-background-secondary border-b border-border;
+  }
+
+  .ui-table th {
+    @apply px-4 py-3 text-caption font-medium text-content-secondary uppercase tracking-wide;
+  }
+
+  .ui-table td {
+    @apply px-4 py-3.5 text-content-primary border-b border-border;
+  }
+
+  .ui-table tbody tr {
+    @apply transition-colors duration-150 hover:bg-white/[0.03];
+  }
+
+  .ui-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .ui-table-empty {
+    @apply px-4 py-12 text-center text-content-secondary text-body;
+  }
+
+  /* Form spacing */
+  .ui-form-stack {
+    @apply space-y-4;
+  }
+
+  .ui-form-field {
+    @apply space-y-1.5;
+  }
+
+  .ui-form-label {
+    @apply ui-subheading;
+  }
+
+  /* Tabs */
+  .ui-tabs {
+    @apply inline-flex gap-1 rounded-xl bg-background-secondary p-1 border border-border;
+  }
+
+  .ui-tab {
+    @apply rounded-lg px-3 py-1.5 text-caption font-medium text-content-secondary
+           transition-all duration-150 hover:text-content-primary;
+  }
+
+  .ui-tab-active {
+    @apply bg-surface text-content-primary shadow-card;
+  }
+
+  /* Alerts / Toasts */
+  .ui-alert {
+    @apply rounded-xl border px-4 py-3 text-body shadow-card;
+  }
+
+  .ui-alert-success {
+    @apply ui-alert bg-success-muted border-success/30 text-success;
+  }
+
+  .ui-alert-error {
+    @apply ui-alert bg-danger-muted border-danger/30 text-danger;
+  }
+
+  .ui-alert-info {
+    @apply ui-alert bg-primary-muted border-primary/30 text-primary;
+  }
+}
