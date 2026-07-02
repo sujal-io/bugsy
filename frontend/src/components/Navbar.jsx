@@ -25,7 +25,7 @@ function Navbar() {
       className="flex-1">
         <Link to="/dashboard" className="flex items-center gap-2 text-white">
           <img
-            src="/bugsy-logo.png"
+            src="/bugsy logo.png"
             alt="Bugsy"
             className="h-12 w-auto object-contain"
           />
