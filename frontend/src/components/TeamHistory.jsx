@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "./ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
+import { History, Users, X, LogIn } from "lucide-react";
 
 function TeamHistory({ onTeamUpdated }) {
   const [teamHistory, setTeamHistory] = useState([]);
@@ -74,18 +75,24 @@ function TeamHistory({ onTeamUpdated }) {
 
   if (loading) {
     return (
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-4">Team History</h2>
-        <div className="text-center text-gray-300">Loading...</div>
+      <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-4 sm:p-6 shadow-lg">
+        <h2 className="text-lg sm:text-xl font-semibold text-content-primary mb-4 flex items-center gap-2">
+          <History className="w-5 h-5" />
+          Team History
+        </h2>
+        <div className="text-center text-content-secondary">Loading...</div>
       </div>
     );
   }
 
   if (teamHistory.length === 0) {
     return (
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-4">Team History</h2>
-        <p className="text-gray-300 text-sm">
+      <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-4 sm:p-6 shadow-lg">
+        <h2 className="text-lg sm:text-xl font-semibold text-content-primary mb-4 flex items-center gap-2">
+          <History className="w-5 h-5" />
+          Team History
+        </h2>
+        <p className="text-content-secondary text-sm">
           No team history yet. Create or join a team to get started.
         </p>
       </div>
@@ -93,9 +100,12 @@ function TeamHistory({ onTeamUpdated }) {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-      <h2 className="text-xl font-semibold mb-1">Team History</h2>
-      <p className="text-gray-300 text-sm mb-4">
+    <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-4 sm:p-6 shadow-lg">
+      <h2 className="text-lg sm:text-xl font-semibold text-content-primary mb-1 flex items-center gap-2">
+        <History className="w-5 h-5" />
+        Team History
+      </h2>
+      <p className="text-content-secondary text-sm mb-4">
         Rejoin teams you've been part of
       </p>
 
@@ -104,19 +114,19 @@ function TeamHistory({ onTeamUpdated }) {
           <div key={team._id}>
             {activeTeamId === team._id ? (
               // Show invite code input form
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+              <div className="bg-background-secondary/50 border border-border rounded-xl p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-white">{team.name}</h3>
+                  <h3 className="font-medium text-content-primary">{team.name}</h3>
                   <button
                     onClick={() => setActiveTeamId(null)}
-                    className="text-xs text-gray-400 hover:text-gray-200"
+                    className="text-xs text-content-muted hover:text-content-primary transition-colors"
                   >
-                    ✕
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
                 <input
                   type="text"
-                  className="input input-bordered input-sm w-full bg-white/5 uppercase tracking-widest"
+                  className="w-full p-3 rounded-xl bg-background-secondary border border-border text-content-primary placeholder:text-content-muted focus:outline-none focus:border-primary text-sm uppercase tracking-widest"
                   placeholder="INVITE CODE"
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value)}
@@ -127,14 +137,14 @@ function TeamHistory({ onTeamUpdated }) {
                   <button
                     onClick={() => rejoinTeam(team._id)}
                     disabled={rejoinLoading === team._id}
-                    className="btn btn-sm btn-primary flex-1"
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary text-white font-medium shadow-lg shadow-primary/25 transition-all flex-1 text-sm"
                   >
                     {rejoinLoading === team._id ? "Joining..." : "Rejoin"}
                   </button>
                   <button
                     onClick={() => setActiveTeamId(null)}
                     disabled={rejoinLoading === team._id}
-                    className="btn btn-sm btn-ghost flex-1"
+                    className="px-4 py-2.5 rounded-xl bg-background-secondary border border-border hover:border-border-strong text-content-primary transition-colors flex-1 text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -142,17 +152,22 @@ function TeamHistory({ onTeamUpdated }) {
               </div>
             ) : (
               // Show team info with rejoin button
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center hover:bg-white/10 transition">
+              <div className="bg-background-secondary/50 border border-border rounded-xl p-4 flex justify-between items-center hover:bg-background-secondary transition-colors cursor-pointer" onClick={() => handleRejoinClick(team._id)}>
                 <div className="flex-1">
-                  <h3 className="font-medium text-white">{team.name}</h3>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <h3 className="font-medium text-content-primary">{team.name}</h3>
+                  <p className="text-xs text-content-muted mt-1 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
                     {team.members?.length || 0} members
                   </p>
                 </div>
                 <button
-                  onClick={() => handleRejoinClick(team._id)}
-                  className="btn btn-sm btn-outline btn-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRejoinClick(team._id);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary transition-colors text-sm font-medium flex items-center gap-2"
                 >
+                  <LogIn className="w-4 h-4" />
                   Rejoin
                 </button>
               </div>

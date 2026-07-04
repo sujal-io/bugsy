@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BugCard from "../components/BugCard";
 import CreateBugForm from "../components/CreateBugForm";
 import FilterBar from "../components/FilterBar";
@@ -8,12 +8,20 @@ import TeamPanel from "../components/TeamPanel";
 import { useToast } from "../components/ToastProvider.jsx";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Sidebar from "../components/Sidebar";
 import { apiRequest } from "../lib/apiClient";
 import { socket } from "../lib/socket";
 
-function Dashboard() {
+const VIEW_LABELS = {
+  my: "My Bugs",
+  team: "Team Bugs",
+  assigned: "Assigned to Me",
+};
 
+function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
+  const hasTeam = Boolean(user?.team);
+  const bugsSectionRef = useRef(null);
 
   useEffect(() => {
     socket.connect();
@@ -82,6 +90,7 @@ function Dashboard() {
   const [team, setTeam] = useState(null);
   const [bugsError, setBugsError] = useState("");
   const [totalPages, setTotalPages] = useState(1);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const toast = useToast();
 
@@ -223,6 +232,15 @@ function Dashboard() {
     }
   };
 
+  const handleViewChange = (newView) => {
+    setView(newView);
+    window.setTimeout(() => {
+      bugsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const sidebarOffset = isSidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]";
+
   // Update Bug
   const updateBug = async (id, status, solution, assignedTo) => {
     try {
@@ -245,52 +263,40 @@ function Dashboard() {
   };
 
   return (
-    <div className="text-white p-6 min-h-screen flex flex-col">
+    <div className="min-h-screen bg-background">
+      {hasTeam && (
+        <Sidebar
+          currentView={view}
+          onViewChange={handleViewChange}
+          user={user}
+          onLogout={handleLogout}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      )}
 
-      <Navbar />
+      <div
+        className={`flex min-h-screen flex-col transition-all duration-300 ${
+          hasTeam ? sidebarOffset : ""
+        }`}
+      >
+        <Navbar
+          title={hasTeam ? VIEW_LABELS[view] : undefined}
+          showLogo={!hasTeam}
+        />
 
-      <div className="flex-1">
-      {/* Scope tabs */}
-      <div className="mb-4">
-        <div role="tablist" className="tabs tabs-boxed bg-white/10">
-          <button
-            role="tab"
-            type="button"
-            className={`tab ${view === "my" ? "tab-active" : ""}`}
-            onClick={() => setView("my")}
-          >
-            My Bugs
-          </button>
-          <button
-            role="tab"
-            type="button"
-            className={`tab ${view === "team" ? "tab-active" : ""}`}
-            onClick={() => setView("team")}
-          >
-            Team Bugs
-          </button>
-          <button
-            role="tab"
-            type="button"
-            className={`tab ${view === "assigned" ? "tab-active" : ""}`}
-            onClick={() => setView("assigned")}
-          >
-            Assigned to Me
-          </button>
-        </div>
-      </div>
-
+        <div className="flex-1 px-4 sm:px-6 py-6 sm:py-8 max-w-[1600px] w-full mx-auto">
       {/* Welcome */}
-      <p className="text-gray-300 mb-6">
+      <p className="text-content-secondary mb-6">
         Welcome back, {user?.username}
       </p>
 
       {/* No-team gate */}
-      {!user?.team ? (
+      {!hasTeam ? (
         <div className="mt-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-1">You’re not in a team yet</h2>
-            <p className="text-gray-300 text-sm">
+          <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-6 mb-6 shadow-2xl">
+            <h2 className="text-xl font-semibold text-content-primary mb-2">You're not in a team yet</h2>
+            <p className="text-content-secondary text-sm">
               Create a team or join one with an invite code to start tracking bugs.
             </p>
           </div>
@@ -321,35 +327,45 @@ function Dashboard() {
       <CreateBugForm createBug={createBug} teamMembers={team?.members || []} />
 
       {/* Bug List */}
+      <section ref={bugsSectionRef} id="bugs-section" className="scroll-mt-24">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-content-primary">
+            {VIEW_LABELS[view]}
+          </h2>
+          <span className="text-sm text-content-muted">
+            {loading ? "Loading..." : `${bugs.length} bug${bugs.length === 1 ? "" : "s"}`}
+          </span>
+        </div>
+
       {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white/10 border border-white/20 rounded-xl p-5"
+              className="bg-surface/50 border border-border rounded-2xl p-5"
             >
-              <div className="skeleton h-5 w-3/4 mb-3 bg-white/10" />
-              <div className="skeleton h-3 w-full mb-2 bg-white/10" />
-              <div className="skeleton h-3 w-5/6 mb-6 bg-white/10" />
+              <div className="h-5 w-3/4 mb-3 bg-background-secondary rounded animate-pulse" />
+              <div className="h-3 w-full mb-2 bg-background-secondary rounded animate-pulse" />
+              <div className="h-3 w-5/6 mb-6 bg-background-secondary rounded animate-pulse" />
               <div className="flex gap-2">
-                <div className="skeleton h-6 w-20 bg-white/10" />
-                <div className="skeleton h-6 w-20 bg-white/10" />
+                <div className="h-6 w-20 bg-background-secondary rounded animate-pulse" />
+                <div className="h-6 w-20 bg-background-secondary rounded animate-pulse" />
               </div>
             </div>
           ))}
         </div>
       ) : bugsError ? (
-        <div className="mt-8">
-          <div className="alert alert-error">
-            <span>{bugsError}</span>
+        <div className="mt-8" role="alert">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl">
+            {bugsError}
           </div>
         </div>
       ) : bugs.length === 0 ? (
-        <p className="text-center text-gray-400 mt-10">
+        <p className="text-center text-content-muted mt-10">
           No bugs found
         </p>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {bugs.map((bug) => (
             <BugCard
               key={bug._id}
@@ -366,12 +382,14 @@ function Dashboard() {
 
       {/* Pagination */}
       <Pagination page={page} setPage={setPage} totalPages={totalPages} />
+      </section>
 
         </>
       )}
       </div>
 
       <Footer />
+    </div>
     </div>
   );
 }

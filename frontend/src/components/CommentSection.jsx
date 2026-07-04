@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/apiClient";
 import { useToast } from "./ToastProvider.jsx";
+import { Send, MessageSquare } from "lucide-react";
 
 function CommentSection({ bugId }) {
   const [comments, setComments] = useState([]);
@@ -57,27 +58,31 @@ function CommentSection({ bugId }) {
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-semibold mb-2">💬 Comments</h3>
+      <h3 className="text-sm font-semibold text-content-primary mb-3 flex items-center gap-2">
+        <MessageSquare className="w-4 h-4" />
+        Comments
+      </h3>
 
       {/* Input */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-4">
         <input
-          className="flex-1 p-2 rounded bg-white/5"
+          className="flex-1 p-3 rounded-xl bg-background-secondary border border-border text-content-primary placeholder:text-content-muted focus:outline-none focus:border-primary text-sm"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write a comment..."
         />
-        <button onClick={handleAdd} className="btn btn-sm btn-primary">
+        <button onClick={handleAdd} className="px-4 py-3rounded-xl bg-primary hover:bg-primary-hover text-white rounded-xl transition-colors flex items-center gap-2">
+          <Send className="w-4 h-4" />
           Add
         </button>
       </div>
 
       {/* List */}
-      <div className="space-y-2 max-h-40 overflow-y-auto">
+      <div className="space-y-3 max-h-60 overflow-y-auto">
         {comments.map((c) => (
-          <div key={c._id} className="bg-white/5 p-2 rounded">
-            <p className="text-xs text-gray-400">{c.user.username}</p>
-            <p className="text-sm">{c.text}</p>
+          <div key={c._id} className="bg-background-secondary/50 border border-border p-3 rounded-xl">
+            <p className="text-xs text-content-muted mb-1">{c.user.username}</p>
+            <p className="text-sm text-content-secondary">{c.text}</p>
           </div>
         ))}
       </div>

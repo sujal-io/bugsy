@@ -18,14 +18,14 @@ function CreateBugForm({ createBug, teamMembers = [] }) {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 mb-8 shadow-lg">
-      <h2 className="text-xl font-semibold mb-5">Create Bug</h2>
+    <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg">
+      <h2 className="text-lg sm:text-xl font-semibold text-content-primary mb-4 sm:mb-5">Create Bug</h2>
 
       <input
         type="text"
         placeholder="Enter bug title..."
-        className="w-full p-3 mb-3 rounded-lg bg-white/5 border border-white/20 
-        focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full p-3 mb-3 rounded-xl bg-background-secondary border border-border 
+        focus:outline-none focus:border-primary text-content-primary placeholder:text-content-muted text-sm"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
@@ -33,55 +33,55 @@ function CreateBugForm({ createBug, teamMembers = [] }) {
       <textarea
         placeholder="Describe the issue..."
         rows="3"
-        className="w-full p-3 mb-3 rounded-lg bg-white/5 border border-white/20 
-        focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+        className="w-full p-3 mb-3 rounded-xl bg-background-secondary border border-border 
+        focus:outline-none focus:border-primary text-content-primary placeholder:text-content-muted text-sm resize-none"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
 
       <div className="relative mb-4">
         <select
-          className="w-full p-3 rounded-lg bg-white/5 border border-white/20 
-          text-white appearance-none"
+          className="w-full p-3 rounded-xl bg-background-secondary border border-border 
+          text-content-primary appearance-none focus:outline-none focus:border-primary text-sm"
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
         >
-          <option className="text-black">Low</option>
-          <option className="text-black">Medium</option>
-          <option className="text-black">High</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
         </select>
 
-        <span className="absolute right-3 top-3 text-gray-300 pointer-events-none">
+        <span className="absolute right-3 top-3 text-content-muted pointer-events-none">
           ▼
         </span>
       </div>
 
       <div className="relative mb-4">
         <select
-          className="w-full p-3 rounded-lg bg-white/5 border border-white/20 
-          text-white appearance-none"
+          className="w-full p-3 rounded-xl bg-background-secondary border border-border 
+          text-content-primary appearance-none focus:outline-none focus:border-primary text-sm"
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
         >
-          <option className="text-black" value="">
+          <option value="">
             Assign to someone (optional)
           </option>
 
           {teamMembers?.map((m) => (
-            <option key={m._id} value={m._id} className="text-black">
+            <option key={m._id} value={m._id}>
               {m.username}
             </option>
           ))}
         </select>
 
-        <span className="absolute right-3 top-3 text-gray-300 pointer-events-none">
+        <span className="absolute right-3 top-3 text-content-muted pointer-events-none">
           ▼
         </span>
       </div>
 
       <button
-        className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 
-        hover:from-blue-600 hover:to-blue-700 transition"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary-hover 
+        hover:from-primary-hover hover:to-primary text-white font-medium shadow-lg shadow-primary/25 transition-all"
         onClick={handleSubmit}
       >
         Add Bug

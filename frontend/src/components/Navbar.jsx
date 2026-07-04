@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../components/ToastProvider.jsx";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
 
-function Navbar() {
+function Navbar({ title, showLogo = false }) {
   const toast = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -20,31 +21,43 @@ function Navbar() {
   };
 
   return (
-    <div className="navbar bg-white/10 backdrop-blur-md border border-white/20 rounded-xl mb-6">
-      <div 
-      className="flex-1">
-        <Link to="/dashboard" className="flex items-center gap-2 text-white">
-          <img
-            src="/bugsy logo.png"
-            alt="Bugsy"
-            className="h-12 w-auto object-contain"
-          />
-        </Link>
-      </div>
+    <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-xl">
+      <div
+        className={`flex items-center justify-between gap-3 py-3 pr-4 sm:pr-6 ${
+          showLogo ? "pl-4 sm:pl-6" : "pl-14 lg:pl-6"
+        }`}
+      >
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {showLogo && (
+            <Link to="/dashboard" className="flex items-center gap-2 text-content-primary shrink-0">
+              <img
+                src="/bugsy logo.png"
+                alt="Bugsy"
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
+          )}
+          {title && (
+            <h1 className="text-base sm:text-lg font-semibold text-content-primary truncate x">
+              {title}
+            </h1>
+          )}
+        </div>
 
-      <div className="flex-none">
         <button
+          type="button"
           onClick={handleLogout}
           disabled={loading}
-          className="btn btn-error btn-sm flex items-center gap-2"
+          aria-label={loading ? "Logging out" : "Logout"}
+          className="shrink-0 p-2 sm:px-4 sm:py-2 rounded-xl bg-red-500/20 border border-red-500/30 hover:bg-red-500/30 text-red-300 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading && (
-            <span className="loading loading-spinner loading-xs"></span>
-          )}
-          {loading ? "Logging out..." : "Logout"}
+          <LogOut className="w-4 h-4" />
+          <span className="hidden sm:inline">
+            {loading ? "Logging out..." : "Logout"}
+          </span>
         </button>
       </div>
-    </div>
+    </header>
   );
 }
 
