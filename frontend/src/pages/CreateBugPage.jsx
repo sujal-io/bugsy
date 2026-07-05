@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bug } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import Sidebar from "../components/Sidebar";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import Sidebar from "../components/layout/Sidebar";
 import { apiRequest } from "../lib/apiClient";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "../components/common/ToastProvider";
 import { socket } from "../lib/socket";
 
 function CreateBugPage() {

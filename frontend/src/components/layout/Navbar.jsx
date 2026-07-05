@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useToast } from "../components/ToastProvider.jsx";
+import { useToast } from "../common/ToastProvider.jsx";
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 

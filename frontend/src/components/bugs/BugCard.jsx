@@ -1,11 +1,11 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useToast } from "./ToastProvider.jsx";
-import { apiRequest } from "../lib/apiClient";
-import CommentSection from "./CommentSection.jsx";
-import ActivityTimeline from "./ActivityTimeline.jsx";
-import SlidePanel from "./SlidePanel.jsx";
-import { socket } from "../lib/socket";
+import { useToast } from "../common/ToastProvider.jsx";
+import { apiRequest } from "../../lib/apiClient";
+import CommentSection from "../comments/CommentSection.jsx";
+import ActivityTimeline from "../activity/ActivityTimeline.jsx";
+import SlidePanel from "../common/SlidePanel.jsx";
+import { socket } from "../../lib/socket";
 import { ChevronRight, Bug, User, Clock } from "lucide-react";
 
 function BugCard({ 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../lib/apiClient";
-import { useToast } from "./ToastProvider.jsx";
+import { apiRequest } from "../../lib/apiClient.js";
+import { useToast } from "../common/ToastProvider.jsx";
 import { Send, MessageSquare } from "lucide-react";
 
 function CommentSection({ bugId }) {

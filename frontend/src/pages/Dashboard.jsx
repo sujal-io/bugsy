@@ -13,16 +13,16 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import BugCard from "../components/BugCard";
-import EmptyState from "../components/EmptyState";
-import FilterBar from "../components/FilterBar";
-import Pagination from "../components/Pagination";
-import TeamGate from "../components/TeamGate";
-import TeamPanel from "../components/TeamPanel";
-import { useToast } from "../components/ToastProvider.jsx";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import Sidebar from "../components/Sidebar";
+import BugCard from "../components/bugs/BugCard";
+import EmptyState from "../components/common/EmptyState.jsx";
+import FilterBar from "../components/bugs/FilterBar.jsx";
+import Pagination from "../components/bugs/Pagination.jsx";
+import TeamGate from "../components/teams/TeamGate";
+import TeamPanel from "../components/teams/TeamPanel";
+import { useToast } from "../components/common/ToastProvider.jsx";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer.jsx";
+import Sidebar from "../components/layout/Sidebar.jsx";
 import { apiRequest } from "../lib/apiClient";
 import { socket } from "../lib/socket";
 

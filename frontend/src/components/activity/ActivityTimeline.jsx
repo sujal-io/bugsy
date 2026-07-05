@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { apiRequest } from "../lib/apiClient";
-import { socket } from "../lib/socket";
+import { apiRequest } from "../../lib/apiClient";
+import { socket } from "../../lib/socket";
 import { Clock } from "lucide-react";
 
 /**

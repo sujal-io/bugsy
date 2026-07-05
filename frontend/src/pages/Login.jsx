@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useToast } from "../components/ToastProvider.jsx";
+import { useToast } from "../components/common/ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 import bugsyLogo from "/bugsy logo.png";
 import { Button } from "../components/ui/Button";

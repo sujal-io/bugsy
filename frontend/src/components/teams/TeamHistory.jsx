@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useToast } from "./ToastProvider.jsx";
-import { apiRequest } from "../lib/apiClient";
+import { useToast } from "../common/ToastProvider.jsx";
+import { apiRequest } from "../../lib/apiClient.js";
 import { History, Users, X, LogIn } from "lucide-react";
 
 function TeamHistory({ onTeamUpdated }) {
