@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { ArrowLeft, Bug } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -181,12 +180,8 @@ function CreateBugPage() {
           </div>
 
           {/* Main form card */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-8 shadow-lg max-w-2xl"
-          >
+          <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-8 shadow-lg max-w-2xl">
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title field */}
               <div>
@@ -320,10 +315,10 @@ function CreateBugPage() {
                 </button>
               </div>
             </form>
-          </motion.div>
+          </div>
 
           {/* Info box */}
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
@@ -338,7 +333,7 @@ function CreateBugPage() {
               <li>✓ Mention expected vs actual behavior</li>
               <li>✓ Assign to the right team member if needed</li>
             </ul>
-          </motion.div>
+          </div>
         </div>
 
         <Footer />

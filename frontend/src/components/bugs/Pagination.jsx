@@ -2,7 +2,7 @@ function Pagination({ page, setPage, totalPages = 1 }) {
   return (
     <div className="flex justify-center mt-6 gap-3">
 
-      {/* Prev Button */}
+      {/* Previous page */}
       <button
         className="px-4 py-2 rounded-xl bg-background-secondary border border-border hover:border-border-strong text-content-primary transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={page === 1}
@@ -11,12 +11,12 @@ function Pagination({ page, setPage, totalPages = 1 }) {
         Prev
       </button>
 
-      {/* Page Number */}
+      {/* Page indicator */}
       <span className="px-4 py-2 text-content-secondary text-sm">
         Page {page} / {totalPages}
       </span>
 
-      {/* Next Button */}
+      {/* Next page */}
       <button
         className="px-4 py-2 rounded-xl bg-background-secondary border border-border hover:border-border-strong text-content-primary transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={page >= totalPages}

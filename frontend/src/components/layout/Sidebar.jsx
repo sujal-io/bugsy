@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Bug,
@@ -43,6 +42,7 @@ function Sidebar({
   ];
 
   const navigate = useNavigate();
+  const sidebarWidthClass = isCollapsed ? 'w-[80px] lg:w-[80px]' : 'w-[280px] lg:w-[280px]';
 
   const handleNavClick = (viewId) => {
     if (viewId === 'create') {
@@ -63,41 +63,23 @@ function Sidebar({
 
   return (
     <>
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
+      {isMobileOpen && (
+        <div
+          onClick={() => setIsMobileOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        />
+      )}
 
-      <motion.aside
-        initial={false}
-        animate={{ width: isCollapsed ? 80 : 280 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className={`
-          fixed left-0 top-0 h-full bg-surface/80 backdrop-blur-xl
-          border-r border-border z-50
-          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0
-        `}
+      <aside
+        className={`fixed left-0 top-0 h-full bg-surface/80 backdrop-blur-xl border-r border-border z-50 transition-all duration-200 ${sidebarWidthClass} ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-border">
             {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3 min-w-0"
-              >
+              <div className="flex items-center gap-3 min-w-0">
                 <img src={bugsyLogo} alt="Bugsy" className="h-8 w-8 object-contain shrink-0" />
                 <span className="text-lg font-bold text-content-primary truncate">Bugsy</span>
-              </motion.div>
+              </div>
             )}
             <button
               type="button"
@@ -126,90 +108,63 @@ function Sidebar({
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                    transition-all duration-200
-                    ${isActionItem
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                    isActionItem
                       ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 mt-2'
                       : isActive
                       ? 'bg-background text-content-primary shadow-card'
                       : 'text-content-secondary hover:text-content-primary hover:bg-white/[0.04]'
-                    }
-                  `}
+                  }`}
                 >
                   <Icon className={`w-5 h-5 shrink-0 ${!isActionItem && isActive ? 'text-primary' : ''}`} />
-                  <AnimatePresence mode="wait">
-                    {!isCollapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="font-medium text-sm truncate"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  {!isCollapsed && <span className="font-medium text-sm truncate">{item.label}</span>}
                 </button>
               );
             })}
           </nav>
 
           <div className="p-3 border-t border-border">
-            <AnimatePresence mode="wait">
-              {!isCollapsed ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="relative p-3 rounded-xl bg-background-secondary/50"
-                >
-                  <div className="flex items-center gap-3 min-w-0 pr-10">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                      <span className="text-sm font-semibold text-primary">
-                        {user?.username?.charAt(0).toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-content-primary truncate">
-                        {user?.username || 'User'}
-                      </p>
-                      <p className="text-xs text-content-muted truncate">
-                        {user?.email || ''}
-                      </p>
-                    </div>
+            {!isCollapsed ? (
+              <div className="relative p-3 rounded-xl bg-background-secondary/50">
+                <div className="flex items-center gap-3 min-w-0 pr-10">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-semibold text-primary">
+                      {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-white/[0.04] text-content-secondary hover:text-red-400 transition-colors shrink-0"
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center gap-2"
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-content-primary truncate">
+                      {user?.username || 'User'}
+                    </p>
+                    <p className="text-xs text-content-muted truncate">
+                      {user?.email || ''}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-white/[0.04] text-content-secondary hover:text-red-400 transition-colors shrink-0"
+                  title="Logout"
                 >
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="p-2 rounded-lg hover:bg-white/[0.04] text-content-secondary hover:text-red-400 transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="p-2 rounded-lg hover:bg-white/[0.04] text-content-secondary hover:text-red-400 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </motion.aside>
+      </aside>
 
       <button
         type="button"

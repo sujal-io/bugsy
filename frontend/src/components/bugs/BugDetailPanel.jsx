@@ -1,8 +1,4 @@
-/**
- * BugDetailPanel — presentation layer for the slide-out bug detail view.
- * All business logic (handlers, state, permissions) lives in BugCard.jsx.
- * This component only renders UI based on the props it receives.
- */
+// Render the bug detail slide panel.
 
 import { useRef } from "react";
 import { Sparkles, MessageSquare, Clock, Trash2, UserCog, RefreshCw, CheckCircle2 } from "lucide-react";
@@ -12,7 +8,7 @@ import CommentSection from "../comments/CommentSection.jsx";
 import ActivityTimeline from "../activity/ActivityTimeline.jsx";
 import SlidePanel from "../common/SlidePanel.jsx";
 
-/* ─── Small layout helpers ─────────────────────────────────────────────── */
+// Small layout helpers.
 
 function SectionLabel({ children }) {
   return (
@@ -95,7 +91,7 @@ function CollapseToggle({ icon: Icon, label, isOpen, onToggle }) {
   );
 }
 
-/* ─── Main export ───────────────────────────────────────────────────────── */
+// Main export.
 
 export function BugDetailPanel({
   bug,

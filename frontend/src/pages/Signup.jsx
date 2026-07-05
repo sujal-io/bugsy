@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useToast } from "../components/common/ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
 import bugsyLogo from "/bugsy logo.png";
@@ -45,12 +44,7 @@ function Signup() {
 
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-background-secondary/50 pointer-events-none" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md"
-      >
+      <div className="relative w-full max-w-md">
         {/* Logo */}
 
         <div className="mb-4 text-center">
@@ -160,26 +154,8 @@ function Signup() {
               <div className="w-full border-t border-border" />
             </div>
 
-            <div className="relative flex justify-center">
-              <span className="bg-surface px-3 text-xs font-medium tracking-widest text-content-muted">
-                OR
-              </span>
-            </div>
           </div>
 
-          {/* Social Login */}
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="secondary" className="py-3 font-medium">
-              <Code className="mr-2 h-4 w-4" />
-              GitHub
-            </Button>
-
-            <Button variant="secondary" className="py-3 font-medium">
-              <Zap className="mr-2 h-4 w-4" />
-              Google
-            </Button>
-          </div>
         </div>
 
         {/* Bottom Link */}
@@ -193,7 +169,7 @@ function Signup() {
             Sign In
           </Link>
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,46 +1,87 @@
 import { useState, useEffect } from "react";
 import { apiRequest } from "../../lib/apiClient";
 import { socket } from "../../lib/socket";
-import { ActivityItem } from "./ActivityItem";
 import { Clock } from "lucide-react";
 
-/* ─── Loading skeleton ──────────────────────────────────────────────────── */
-function TimelineSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="flex gap-3">
-          <div className="h-7 w-7 rounded-full bg-background-secondary animate-pulse shrink-0" />
-          <div className="flex-1 space-y-1.5 pt-1">
-            <div className="h-3 w-2/3 rounded bg-background-secondary animate-pulse" />
-            <div className="h-2.5 w-1/3 rounded bg-background-secondary animate-pulse" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+// Format relative time.
+
+function formatRelativeTime(date) {
+  const now = new Date();
+  const then = new Date(date);
+  const seconds = Math.floor((now - then) / 1000);
+
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+  return then.toLocaleDateString();
 }
 
-/* ─── Empty state ───────────────────────────────────────────────────────── */
-function TimelineEmpty() {
-  return (
-    <div className="flex flex-col items-center gap-2 py-8 text-center">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-border/40">
-        <Clock className="h-5 w-5 text-content-muted" />
-      </div>
-      <p className="text-sm font-medium text-content-primary">No activity yet</p>
-      <p className="text-xs text-content-muted">Actions on this bug will appear here.</p>
-    </div>
-  );
+// Get action colors.
+
+function getActionColor(action) {
+  switch (action) {
+    case "created bug":
+      return "bg-blue-500/20 text-blue-300";
+    case "assigned bug":
+      return "bg-purple-500/20 text-purple-300";
+    case "changed status":
+      return "bg-yellow-500/20 text-yellow-300";
+    case "added solution":
+      return "bg-green-500/20 text-green-300";
+    case "commented on bug":
+      return "bg-orange-500/20 text-orange-300";
+    case "edited bug":
+      return "bg-indigo-500/20 text-indigo-300";
+    default:
+      return "bg-gray-500/20 text-gray-300";
+  }
 }
 
-/* ─── Main component ────────────────────────────────────────────────────── */
+// Get the icon for an action.
+function getActionIcon(action) {
+  switch (action) {
+    case "created bug":
+      return "📝";
+    case "assigned bug":
+      return "👤";
+    case "changed status":
+      return "🔄";
+    case "added solution":
+      return "✅";
+    case "commented on bug":
+      return "💬";
+    case "edited bug":
+      return "✏️";
+    default:
+      return "•";
+  }
+}
+
 export default function ActivityTimeline({ bugId }) {
   const [activities, setActivities] = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ── Fetch ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchActivities();
+  }, [bugId]);
+
+  useEffect(() => {
+    socket.on("activityAdded", (newActivity) => {
+      if (newActivity.bug === bugId) {
+        console.log("Realtime activity:", newActivity);
+  
+        setActivities((prev) => [newActivity, ...prev]);
+      }
+    });
+  
+    return () => {
+      socket.off("activityAdded");
+    };
+  }, [bugId]);
+
   const fetchActivities = async () => {
     try {
       setLoading(true);
@@ -55,40 +96,64 @@ export default function ActivityTimeline({ bugId }) {
     }
   };
 
-  useEffect(() => { fetchActivities(); }, [bugId]);
-
-  // ── Realtime ───────────────────────────────────────────────────────────
-  useEffect(() => {
-    socket.on("activityAdded", (newActivity) => {
-      if (newActivity.bug === bugId) {
-        console.log("Realtime activity:", newActivity);
-        setActivities((prev) => [newActivity, ...prev]);
-      }
-    });
-    return () => socket.off("activityAdded");
-  }, [bugId]);
-
-  // ── Render ─────────────────────────────────────────────────────────────
-  if (loading) return <TimelineSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-4">
+        <div className="text-sm text-content-muted">Loading timeline...</div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400 text-center">
+      <div className="text-sm text-red-400 py-4 text-center">
         {error}
       </div>
     );
   }
 
-  if (activities.length === 0) return <TimelineEmpty />;
+  if (activities.length === 0) {
+    return (
+      <div className="text-sm text-content-muted py-4 text-center">
+        No activity yet
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {activities.map((activity, idx) => (
-        <ActivityItem
-          key={activity._id}
-          activity={activity}
-          isLast={idx === activities.length - 1}
-        />
+    <div className="space-y-3">
+      {activities.map((activity) => (
+        <div key={activity._id} className="flex gap-3 items-start">
+          {/* Icon */}
+          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${getActionColor(activity.action)}`}>
+            {getActionIcon(activity.action)}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm">
+                <span className="font-semibold text-content-primary">
+                  {activity.user?.username || "Unknown User"}
+                </span>
+                <span className="text-content-secondary ml-2">
+                  {activity.action}
+                </span>
+              </p>
+              <span className="text-xs text-content-muted whitespace-nowrap flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatRelativeTime(activity.createdAt)}
+              </span>
+            </div>
+
+            {/* Details (if any) */}
+            {activity.details && (
+              <p className="text-xs text-content-muted mt-1">
+                {activity.details}
+              </p>
+            )}
+          </div>
+        </div>
       ))}
     </div>
   );

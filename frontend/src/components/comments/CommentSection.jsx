@@ -5,7 +5,7 @@ import { MessageSquare } from "lucide-react";
 import { CommentCard } from "./CommentCard";
 import { CommentInput } from "./CommentInput";
 
-/* ─── Loading skeleton ──────────────────────────────────────────────────── */
+// Loading skeleton.
 function CommentSkeleton() {
   return (
     <div className="space-y-3">
@@ -22,7 +22,7 @@ function CommentSkeleton() {
   );
 }
 
-/* ─── Empty state ───────────────────────────────────────────────────────── */
+// Empty state.
 function CommentsEmpty() {
   return (
     <div className="flex flex-col items-center gap-2 py-6 text-center">
@@ -35,7 +35,7 @@ function CommentsEmpty() {
   );
 }
 
-/* ─── Main component ────────────────────────────────────────────────────── */
+// Main component.
 function CommentSection({ bugId }) {
   const [comments, setComments] = useState([]);
   const [text, setText]         = useState("");

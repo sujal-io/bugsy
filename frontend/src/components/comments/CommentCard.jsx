@@ -1,7 +1,4 @@
-/**
- * CommentCard — pure presentation component for a single comment.
- * No business logic.
- */
+// Render a single comment card.
 
 function formatRelativeTime(date) {
   const seconds = Math.floor((Date.now() - new Date(date)) / 1000);

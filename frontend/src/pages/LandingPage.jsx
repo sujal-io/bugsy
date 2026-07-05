@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Zap,
@@ -88,26 +87,17 @@ const LandingPage = () => {
                 </span>
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
+              <div>
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   <Zap className="w-3.5 h-3.5" />
                   AI-Powered Bug Tracking
                 </span>
-              </motion.div>
+              </div>
             </div>
 
             {/* Heading */}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-5"
-            >
+            <div className="space-y-5">
               <h1 className="tracking-tight leading-none">
                 <span className="block text-4xl lg:text-6xl font-bold text-white">
                   Every bug has a story.
@@ -124,16 +114,11 @@ const LandingPage = () => {
                 engineering team collaborate in real time, resolve issues
                 faster, and ship with confidence.
               </p>
-            </motion.div>
+            </div>
 
             {/* Buttons */}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
-            >
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button
                 onClick={() => navigate("/signup")}
                 className="w-full sm:w-auto justify-center px-8 py-3 bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary text-white font-medium shadow-lg shadow-primary/25"
@@ -156,16 +141,11 @@ const LandingPage = () => {
                   Explore on GitHub
                 </Button>
               </a>
-            </motion.div>
+            </div>
 
             {/* Features */}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="pt-8"
-            >
+            <div className="pt-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
@@ -185,16 +165,11 @@ const LandingPage = () => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Tech Stack */}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="pt-8"
-            >
+            <div className="pt-8">
               <div className="flex flex-wrap gap-2">
                 {techStack.map((tech, index) => (
                   <div
@@ -209,7 +184,7 @@ const LandingPage = () => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
         {/* ================= RIGHT SIDE ================= */}
@@ -218,13 +193,7 @@ const LandingPage = () => {
           {/* Background Glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-background-secondary/50 pointer-events-none" />
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            whileHover={{ y: -4 }}
-            className="relative w-full max-w-md"
-          >
+          <div className="relative w-full max-w-md">
             <div className="bg-surface/80 backdrop-blur-xl border border-primary/10 rounded-3xl p-7 lg:p-8 shadow-[0_20px_60px_rgba(99,102,241,0.15)]">
               {/* Badge */}
 
@@ -317,18 +286,14 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* ================= DASHBOARD PREVIEW ================= */}
 
       <div className="hidden lg:block px-6 lg:px-20 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
+        <div>
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-primary/10 rounded-3xl blur-3xl pointer-events-none" />
 
@@ -368,7 +333,7 @@ const LandingPage = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

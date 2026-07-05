@@ -1,7 +1,4 @@
-/**
- * CommentInput — pure presentation component for the comment text input + send button.
- * No business logic.
- */
+// Render the comment input form.
 
 import { Send } from "lucide-react";
 

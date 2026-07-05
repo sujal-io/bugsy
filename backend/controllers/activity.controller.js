@@ -2,13 +2,7 @@ import Activity from "../models/activity.model.js";
 import Bug from "../models/bug.model.js";
 import { io } from "../server.js";
 
-/**
- * Helper function to log activity
- * @param {string} bugId - The bug ID
- * @param {string} userId - The user ID who performed the action
- * @param {string} action - The action type
- * @param {string} details - Optional details about the action
- */
+// Log a bug activity entry.
 export const logActivity = async (bugId, userId, action, details = null) => {
   try {
     const activity = await Activity.create({
@@ -33,10 +27,7 @@ export const logActivity = async (bugId, userId, action, details = null) => {
   }
 };
 
-/**
- * Get all activities for a bug
- * @route GET /api/activity/:bugId
- */
+// Get activities for a bug.
 export const getBugActivities = async (req, res, next) => {
   try {
     const { bugId } = req.params;
@@ -51,9 +42,7 @@ export const getBugActivities = async (req, res, next) => {
   }
 };
 
-/**
- * Get activities count for a bug (useful for frontend badges)
- */
+// Get the number of activities for a bug.
 export const getBugActivityCount = async (req, res, next) => {
   try {
     const { bugId } = req.params;

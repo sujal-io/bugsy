@@ -1,7 +1,4 @@
-/**
- * ActivityItem — pure presentation component for one timeline entry.
- * No business logic. Receives a single activity object as a prop.
- */
+// Render a single activity item.
 
 import {
   Bug,
@@ -47,7 +44,7 @@ export function ActivityItem({ activity, isLast = false }) {
 
   return (
     <div className="flex gap-3">
-      {/* Left: icon + connector line */}
+      {/* Left: icon and connector line */}
       <div className="flex flex-col items-center">
         <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${bg}`}>
           <Icon className={`h-3.5 w-3.5 ${color}`} />
@@ -58,7 +55,7 @@ export function ActivityItem({ activity, isLast = false }) {
       {/* Right: content */}
       <div className={`flex-1 min-w-0 ${isLast ? "pb-0" : "pb-4"}`}>
         <div className="flex items-start justify-between gap-2">
-          {/* Actor + action */}
+          {/* Actor and action */}
           <p className="text-sm leading-snug flex items-center gap-1.5 flex-wrap">
             <UserInitial name={username} />
             <span className="font-medium text-content-primary">{username}</span>

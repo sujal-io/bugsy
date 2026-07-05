@@ -1,8 +1,4 @@
-/**
- * BugMeta — pure presentation component.
- * Renders reporter + assignee avatars with initials and labels.
- * No business logic.
- */
+// Render reporter and assignee labels.
 
 function Avatar({ name, muted = false }) {
   const initial = name ? name.charAt(0).toUpperCase() : "?";

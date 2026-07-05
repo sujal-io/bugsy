@@ -1,8 +1,7 @@
-import { motion } from "framer-motion";
 import { Plus, Bug, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-function EmptyState({ type = "no-bugs", onCreateClick }) {
+function EmptyState({ type = "no-bugs" }) {
   const navigate = useNavigate();
 
   const emptyStates = {
@@ -42,12 +41,7 @@ function EmptyState({ type = "no-bugs", onCreateClick }) {
   const Icon = state.icon;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col items-center justify-center py-16 px-4 sm:py-24"
-    >
+    <div className="flex flex-col items-center justify-center py-16 px-4 sm:py-24">
       <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-6">
         <Icon className="h-8 w-8 text-primary" />
       </div>
@@ -63,16 +57,13 @@ function EmptyState({ type = "no-bugs", onCreateClick }) {
       {state.action && (
         <button
           onClick={state.action.onClick}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl 
-          bg-gradient-to-r from-primary to-primary-hover text-white font-medium
-          shadow-lg shadow-primary/25 hover:shadow-lg hover:shadow-primary/35
-          transition-all duration-200 hover:scale-105"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover text-white font-medium shadow-lg shadow-primary/25 transition-all duration-200 hover:shadow-primary/35"
         >
           <Plus className="h-4 w-4" />
           {state.action.label}
         </button>
       )}
-    </motion.div>
+    </div>
   );
 }
 

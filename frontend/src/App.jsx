@@ -14,7 +14,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
 
-      {/* protected route for dashboard */}
+      {/* Protected dashboard route */}
       <Route
         path="/dashboard"
         element={
@@ -24,7 +24,7 @@ function App() {
         }
       />
 
-      {/* protected route for create bug page */}
+      {/* Protected create-bug route */}
       <Route
         path="/dashboard/create-bug"
         element={
