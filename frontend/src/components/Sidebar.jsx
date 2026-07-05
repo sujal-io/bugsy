@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bug,
+  LayoutDashboard,
   Users,
   UserCheck,
   Menu,
@@ -32,6 +33,7 @@ function Sidebar({
   }, []);
 
   const navItems = [
+    { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'my', label: 'My Bugs', icon: Bug },
     { id: 'team', label: 'Team Bugs', icon: Users },
     { id: 'assigned', label: 'Assigned to Me', icon: UserCheck },
