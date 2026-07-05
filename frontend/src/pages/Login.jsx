@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useToast } from "../components/ToastProvider.jsx";
+import { useToast } from "../components/common/ToastProvider.jsx";
 import { apiRequest } from "../lib/apiClient";
+import bugsyLogo from "/bugsy logo.png";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+
+import { ArrowRight, Code, Zap } from "lucide-react";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const toast = useToast();
-
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -18,11 +22,14 @@ function Login() {
     try {
       const data = await apiRequest("/api/auth/login", {
         method: "POST",
+
         auth: false,
+
         body: { email, password },
       });
 
       localStorage.setItem("token", data.token);
+
       localStorage.setItem("user", JSON.stringify(data.user));
 
       toast.success("Login successful!");
@@ -36,76 +43,121 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center text-white p-4 min-h-screen">
+    <div className="relative min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 lg:px-12 py-6 lg:py-8 overflow-hidden">
+      {/* Background */}
 
-      <div className="flex w-full max-w-[900px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg overflow-hidden max-h-[90vh]">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-background-secondary/50 pointer-events-none" />
 
-        {/* Left - Form */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto">
+      <div className="relative w-full max-w-md">
+        {/* ================= LOGO ================= */}
 
-          <div className="mb-6">
+        <div className="mb-5 text-center">
+          <div className="flex items-center justify-center gap-3">
             <img
-              src="/bugsy-logo.png"
+              src={bugsyLogo}
               alt="Bugsy"
-              className="h-12 w-auto object-contain"
+              className="h-10 w-10 lg:h-11 lg:w-11 object-contain"
             />
-            <p className="text-gray-400 text-sm mt-1">Track bugs. Ship faster.</p>
+
+            <h1 className="text-2xl font-bold tracking-tight text-content-primary">
+              Bugsy
+            </h1>
           </div>
 
-          {/* Heading */}
-          <h2 className="text-xl md:text-2xl font-semibold mb-2">Welcome Back</h2>
-          <p className="text-gray-300 mb-4 text-sm md:text-base">Login to your account</p>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full p-2 md:p-3 mb-3 rounded-lg bg-white/5 border border-white/20 text-sm
-              focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full p-2 md:p-3 mb-3 rounded-lg bg-white/5 border border-white/20 text-sm
-              focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <button
-              disabled={loading}
-              className="w-full py-2 md:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-sm md:text-base
-              hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading && (
-                <span className="loading loading-spinner loading-xs"></span>
-              )}
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
-
-          <p className="mt-4 text-center text-sm text-gray-300">
-            Don’t have an account?{" "}
-            <Link to="/signup" className="text-blue-400">
-              Sign Up
-            </Link>
+          <p className="mt-3 text-sm leading-relaxed text-content-secondary">
+            Every bug has a story.
           </p>
         </div>
 
-        {/* Right - Image */}
-        <div className="hidden md:flex w-1/2 items-center justify-center bg-white/5">
-          <img
-            src="/login.png"
-            alt="Login Illustration"
-            className="w-full max-w-lg object-contain"
-          />
+        {/* ================= CARD ================= */}
+
+        <div className="rounded-3xl border border-primary/10 bg-surface/80 backdrop-blur-xl p-6 lg:p-7 shadow-[0_20px_60px_rgba(99,102,241,0.18)]">
+          {/* Heading */}
+
+          <h2 className="text-2xl font-bold text-center text-content-primary">
+            Welcome back 👋
+          </h2>
+
+          <p className="mt-2 mb-6 text-center text-content-secondary">
+            Continue tracking bugs with your team.
+          </p>
+
+          {/* Form */}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-content-primary">
+                Email
+              </label>
+
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 rounded-xl border-border bg-background-secondary px-4"
+              />
+            </div>
+
+            {/* Password */}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-content-primary">
+                Password
+              </label>
+
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 rounded-xl border-border bg-background-secondary px-4"
+              />
+            </div>
+
+            {/* Submit */}
+
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full py-3 bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary text-white font-medium shadow-lg shadow-primary/25"
+            >
+              {loading ? (
+                "Signing in..."
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          {/* Divider */}
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+
+          </div>
+
         </div>
 
-      </div>
+        {/* Bottom Link */}
 
+        <p className="mt-6 text-center text-sm text-content-secondary">
+          New to Bugsy?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-primary transition-colors hover:text-primary-hover"
+          >
+            Create Workspace
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

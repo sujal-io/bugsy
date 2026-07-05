@@ -47,14 +47,14 @@ function Footer() {
   ];
 
   return (
-    <footer className="bg-white/10 backdrop-blur-md border-t border-white/20 mt-12">
+    <footer className="bg-surface/50 backdrop-blur-xl border-t border-border mt-12">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {/* Brand Section */}
           <div className="flex flex-col justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Bugsy</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-xl font-bold text-content-primary mb-2">Bugsy</h3>
+              <p className="text-content-secondary text-sm">
                 Track and manage bugs efficiently with your team
               </p>
             </div>
@@ -63,7 +63,7 @@ function Footer() {
           {/* Social Links */}
           <div className="flex flex-col justify-between">
             <div>
-              <h4 className="text-white font-semibold mb-4">Follow Us</h4>
+              <h4 className="text-content-primary font-semibold mb-4">Follow Us</h4>
               <div className="flex gap-4 flex-wrap">
                 {socialLinks.map((link) => (
                   <a
@@ -72,7 +72,7 @@ function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white transition-all duration-200"
+                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-background-secondary hover:bg-white/[0.04] border border-border hover:border-border-strong text-content-muted hover:text-content-primary transition-all duration-200"
                     title={link.name}
                   >
                     {link.icon}
@@ -84,24 +84,24 @@ function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-white/20 my-6"></div>
+        <div className="border-t border-border my-6"></div>
 
         {/* Bottom Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm">
+          <p className="text-content-muted text-sm">
             &copy; {currentYear} Bugsy. All rights reserved.
           </p>
           <div className="flex gap-4 text-sm">
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
+              className="text-content-muted hover:text-content-primary transition-colors duration-200"
             >
               Privacy Policy
             </a>
-            <span className="text-gray-600">•</span>
+            <span className="text-content-secondary">•</span>
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
+              className="text-content-muted hover:text-content-primary transition-colors duration-200"
             >
               Terms of Service
             </a>

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { apiRequest } from "../lib/apiClient";
-import { socket } from "../lib/socket";
+import { apiRequest } from "../../lib/apiClient";
+import { socket } from "../../lib/socket";
+import { Clock } from "lucide-react";
 
-/**
- * Formats a date to a relative time string (e.g., "2 mins ago")
- */
+// Format relative time.
+
 function formatRelativeTime(date) {
   const now = new Date();
   const then = new Date(date);
@@ -18,31 +18,28 @@ function formatRelativeTime(date) {
   return then.toLocaleDateString();
 }
 
-/**
- * Get icon color based on action type
- */
+// Get action colors.
+
 function getActionColor(action) {
   switch (action) {
     case "created bug":
-      return "bg-blue-100 text-blue-600";
+      return "bg-blue-500/20 text-blue-300";
     case "assigned bug":
-      return "bg-purple-100 text-purple-600";
+      return "bg-purple-500/20 text-purple-300";
     case "changed status":
-      return "bg-yellow-100 text-yellow-600";
+      return "bg-yellow-500/20 text-yellow-300";
     case "added solution":
-      return "bg-green-100 text-green-600";
+      return "bg-green-500/20 text-green-300";
     case "commented on bug":
-      return "bg-orange-100 text-orange-600";
+      return "bg-orange-500/20 text-orange-300";
     case "edited bug":
-      return "bg-indigo-100 text-indigo-600";
+      return "bg-indigo-500/20 text-indigo-300";
     default:
-      return "bg-gray-100 text-gray-600";
+      return "bg-gray-500/20 text-gray-300";
   }
 }
 
-/**
- * Get icon symbol based on action type
- */
+// Get the icon for an action.
 function getActionIcon(action) {
   switch (action) {
     case "created bug":
@@ -102,14 +99,14 @@ export default function ActivityTimeline({ bugId }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-4">
-        <div className="text-sm text-gray-500">Loading timeline...</div>
+        <div className="text-sm text-content-muted">Loading timeline...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-sm text-red-500 py-4 text-center">
+      <div className="text-sm text-red-400 py-4 text-center">
         {error}
       </div>
     );
@@ -117,50 +114,47 @@ export default function ActivityTimeline({ bugId }) {
 
   if (activities.length === 0) {
     return (
-      <div className="text-sm text-gray-400 py-4 text-center">
+      <div className="text-sm text-content-muted py-4 text-center">
         No activity yet
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Activity Timeline</h3>
-      
-      <div className="max-h-64 overflow-y-auto space-y-3">
-        {activities.map((activity) => (
-          <div key={activity._id} className="flex gap-3">
-            {/* Icon */}
-            <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${getActionColor(activity.action)}`}>
-              {getActionIcon(activity.action)}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="text-sm">
-                  <span className="font-semibold text-gray-900">
-                    {activity.user?.username || "Unknown User"}
-                  </span>
-                  <span className="text-gray-600 ml-2">
-                    {activity.action}
-                  </span>
-                </p>
-                <span className="text-xs text-gray-400 whitespace-nowrap">
-                  {formatRelativeTime(activity.createdAt)}
-                </span>
-              </div>
-
-              {/* Details (if any) */}
-              {activity.details && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {activity.details}
-                </p>
-              )}
-            </div>
+    <div className="space-y-3">
+      {activities.map((activity) => (
+        <div key={activity._id} className="flex gap-3 items-start">
+          {/* Icon */}
+          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${getActionColor(activity.action)}`}>
+            {getActionIcon(activity.action)}
           </div>
-        ))}
-      </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm">
+                <span className="font-semibold text-content-primary">
+                  {activity.user?.username || "Unknown User"}
+                </span>
+                <span className="text-content-secondary ml-2">
+                  {activity.action}
+                </span>
+              </p>
+              <span className="text-xs text-content-muted whitespace-nowrap flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatRelativeTime(activity.createdAt)}
+              </span>
+            </div>
+
+            {/* Details (if any) */}
+            {activity.details && (
+              <p className="text-xs text-content-muted mt-1">
+                {activity.details}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
