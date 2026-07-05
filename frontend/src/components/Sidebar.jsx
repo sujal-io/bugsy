@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Bug,
   LayoutDashboard,
@@ -10,6 +11,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from 'lucide-react';
 import bugsyLogo from '/bugsy logo.png';
 
@@ -37,10 +39,17 @@ function Sidebar({
     { id: 'my', label: 'My Bugs', icon: Bug },
     { id: 'team', label: 'Team Bugs', icon: Users },
     { id: 'assigned', label: 'Assigned to Me', icon: UserCheck },
+    { id: 'create', label: 'Create Bug', icon: Plus, isAction: true },
   ];
 
+  const navigate = useNavigate();
+
   const handleNavClick = (viewId) => {
-    onViewChange(viewId);
+    if (viewId === 'create') {
+      navigate('/dashboard/create-bug');
+    } else {
+      onViewChange(viewId);
+    }
     if (isMobile) setIsMobileOpen(false);
   };
 
@@ -110,6 +119,7 @@ function Sidebar({
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentView === item.id;
+              const isActionItem = item.isAction;
 
               return (
                 <button
@@ -119,13 +129,15 @@ function Sidebar({
                   className={`
                     w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
                     transition-all duration-200
-                    ${isActive
+                    ${isActionItem
+                      ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 mt-2'
+                      : isActive
                       ? 'bg-background text-content-primary shadow-card'
                       : 'text-content-secondary hover:text-content-primary hover:bg-white/[0.04]'
                     }
                   `}
                 >
-                  <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                  <Icon className={`w-5 h-5 shrink-0 ${!isActionItem && isActive ? 'text-primary' : ''}`} />
                   <AnimatePresence mode="wait">
                     {!isCollapsed && (
                       <motion.span

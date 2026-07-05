@@ -14,7 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import BugCard from "../components/BugCard";
-import CreateBugForm from "../components/CreateBugForm";
+import EmptyState from "../components/EmptyState";
 import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
 import TeamGate from "../components/TeamGate";
@@ -762,10 +762,6 @@ function Dashboard() {
                     </SummaryPanel>
                   </div>
 
-                  <CreateBugForm
-                    createBug={createBug}
-                    teamMembers={team?.members || []}
-                  />
                 </>
               ) : (
                 <>
@@ -786,11 +782,6 @@ function Dashboard() {
                     setStatusFilter={setStatusFilter}
                     priorityFilter={priorityFilter}
                     setPriorityFilter={setPriorityFilter}
-                  />
-
-                  <CreateBugForm
-                    createBug={createBug}
-                    teamMembers={team?.members || []}
                   />
 
                   <section
@@ -849,9 +840,17 @@ function Dashboard() {
                         </div>
                       </div>
                     ) : bugs.length === 0 ? (
-                      <p className="text-center text-content-muted mt-10">
-                        No bugs found
-                      </p>
+                      <EmptyState
+                        type={
+                          view === "my"
+                            ? "my-bugs"
+                            : view === "team"
+                            ? "team-bugs"
+                            : view === "assigned"
+                            ? "assigned-bugs"
+                            : "no-bugs"
+                        }
+                      />
                     ) : (
                       <div
                         className={`grid grid-cols-1 gap-4 sm:gap-6 ${

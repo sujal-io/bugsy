@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import CreateBugPage from "./pages/CreateBugPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -19,6 +20,16 @@ function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* protected route for create bug page */}
+      <Route
+        path="/dashboard/create-bug"
+        element={
+          <ProtectedRoute>
+            <CreateBugPage />
           </ProtectedRoute>
         }
       />
