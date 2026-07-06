@@ -1,14 +1,20 @@
-// Render the bug detail slide panel.
-
-import { useRef } from "react";
-import { Sparkles, MessageSquare, Clock, Trash2, UserCog, RefreshCw, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import {
+  Sparkles, MessageSquare, Clock, Trash2,
+  UserCog, RefreshCw, CheckCircle2, ChevronDown, Image,
+} from "lucide-react";
 import { BugStatusBadge } from "./BugStatusBadge";
 import { BugPriorityBadge } from "./BugPriorityBadge";
 import CommentSection from "../comments/CommentSection.jsx";
 import ActivityTimeline from "../activity/ActivityTimeline.jsx";
 import SlidePanel from "../common/SlidePanel.jsx";
+import ImagePreviewModal from "../attachments/ImagePreviewModal.jsx";
 
-// Small layout helpers.
+// ── Shared layout primitives ───────────────────────────────────────────────
+
+function Divider() {
+  return <div className="border-t border-border" />;
+}
 
 function SectionLabel({ children }) {
   return (
@@ -18,8 +24,20 @@ function SectionLabel({ children }) {
   );
 }
 
-function Divider() {
-  return <div className="border-t border-border" />;
+function SectionHeader({ icon: Icon, title, description, iconClass = "text-content-muted" }) {
+  return (
+    <div className="flex items-start gap-3 mb-4">
+      <div className="shrink-0 mt-0.5 h-8 w-8 rounded-lg bg-background-secondary border border-border flex items-center justify-center">
+        <Icon className={`w-4 h-4 ${iconClass}`} />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-content-primary leading-none">{title}</p>
+        {description && (
+          <p className="text-xs text-content-muted mt-1">{description}</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function AvatarChip({ name, sub }) {
@@ -46,52 +64,60 @@ function FieldRow({ label, children }) {
   );
 }
 
-function PanelSelect({ label, value, onChange, children }) {
+function PanelSelect({ value, onChange, children }) {
   return (
-    <div className="space-y-1.5">
-      <SectionLabel>{label}</SectionLabel>
-      <select
-        className="w-full px-3 py-2.5 rounded-xl bg-background-secondary border border-border
-          text-content-primary text-sm focus:outline-none focus:border-primary
-          transition-colors appearance-none"
-        value={value}
-        onChange={onChange}
-      >
-        {children}
-      </select>
-    </div>
+    <select
+      className="w-full px-3 py-2.5 rounded-xl bg-background-secondary border border-border
+        text-content-primary text-sm focus:outline-none focus:border-primary
+        transition-colors appearance-none"
+      value={value}
+      onChange={onChange}
+    >
+      {children}
+    </select>
   );
 }
 
-function PrimaryButton({ onClick, children, className = "" }) {
+function PrimaryButton({ onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors ${className}`}
+      className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors"
     >
       {children}
     </button>
   );
 }
 
-function CollapseToggle({ icon: Icon, label, isOpen, onToggle }) {
+// Collapsible sub-section used for Activity inside Discussion
+function Collapsible({ icon: Icon, label, iconClass, children }) {
+  const [open, setOpen] = useState(false);
   return (
-    <button
-      onClick={onToggle}
-      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl
-        bg-background-secondary/60 border border-border hover:border-border-strong
-        text-content-primary text-sm font-medium transition-colors group"
-    >
-      <span className="flex items-center gap-2">
-        <Icon className="w-4 h-4 text-content-muted group-hover:text-content-primary transition-colors" />
-        {label}
-      </span>
-      <span className="text-content-muted text-xs">{isOpen ? "▲" : "▼"}</span>
-    </button>
+    <div>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-xl
+          bg-background-secondary/40 hover:bg-background-secondary/80
+          border border-border hover:border-border-strong
+          text-content-secondary hover:text-content-primary
+          text-sm font-medium transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          <Icon className={`w-4 h-4 ${iconClass}`} />
+          {label}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-content-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-border bg-background-secondary/30 px-3 py-3">
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
-// Main export.
+// ── Main export ────────────────────────────────────────────────────────────
 
 export function BugDetailPanel({
   bug,
@@ -107,15 +133,11 @@ export function BugDetailPanel({
   showAI,
   loadingAI,
   formatted,
-  showComments,
-  showTimeline,
   // handlers
   handleUpdateAssignment,
   handleUpdateStatus,
   handleSubmitSolution,
   getAISolution,
-  handleToggleComments,
-  setShowTimeline,
   deleteBug,
   setIsPanelOpen,
   // permissions
@@ -123,13 +145,17 @@ export function BugDetailPanel({
   canChangeStatus,
   canFixBug,
   isBugCreator,
+  isTeamAdmin,
   // data
   teamMembers,
-  commentRef,
 }) {
+  const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [selectedScreenshot, setSelectedScreenshot] = useState(null);
+
   return (
     <SlidePanel isOpen={isOpen} onClose={onClose} title={bug.title} priority={bug.priority} status={bug.status}>
-      <div className="space-y-5 pb-8">
+      <div className="space-y-5 pb-10">
 
         {/* ── Description ─────────────────────────────────────────── */}
         <section>
@@ -141,7 +167,42 @@ export function BugDetailPanel({
 
         <Divider />
 
-        {/* ── People + Status row ──────────────────────────────────── */}
+        {bug.screenshots?.length > 0 && (
+          <section>
+            <SectionLabel>Screenshots</SectionLabel>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {bug.screenshots.map((screenshot) => (
+                <button
+                  key={screenshot._id || screenshot.publicId}
+                  type="button"
+                  onClick={() => setSelectedScreenshot({ url: screenshot.url, filename: screenshot.filename })}
+                  className="group overflow-hidden rounded-xl border border-border bg-background-secondary/40 p-1 text-left transition-transform hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <img
+                    src={screenshot.url}
+                    alt={screenshot.filename}
+                    className="h-24 w-full rounded-lg object-cover"
+                  />
+                  <p className="truncate px-1 pb-1 pt-2 text-[11px] font-medium text-content-primary">
+                    {screenshot.filename}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {selectedScreenshot && (
+          <ImagePreviewModal
+            url={selectedScreenshot.url}
+            filename={selectedScreenshot.filename}
+            onClose={() => setSelectedScreenshot(null)}
+          />
+        )}
+
+        <Divider />
+
+        {/* ── Details ─────────────────────────────────────────────── */}
         <section className="space-y-3">
           <SectionLabel>Details</SectionLabel>
 
@@ -165,7 +226,7 @@ export function BugDetailPanel({
           </FieldRow>
         </section>
 
-        {/* ── Solution (read-only) ─────────────────────────────────── */}
+        {/* ── Solution read-only ───────────────────────────────────── */}
         {bug.solution && (
           <>
             <Divider />
@@ -178,6 +239,105 @@ export function BugDetailPanel({
           </>
         )}
 
+        <Divider />
+
+        {/* ── Discussion ───────────────────────────────────────────── */}
+        <section>
+          <button
+            type="button"
+            onClick={() => setIsDiscussionOpen((prev) => !prev)}
+            className="w-full flex items-center justify-between rounded-xl border border-border bg-background-secondary/40 px-3 py-2.5 text-left transition-colors hover:bg-background-secondary/80"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background-secondary">
+                <MessageSquare className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-content-primary leading-none">Discussion</p>
+                <p className="mt-1 text-xs text-content-muted">Comments and activity for this bug.</p>
+              </div>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-content-muted transition-transform duration-200 ${isDiscussionOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isDiscussionOpen && (
+            <div className="mt-3">
+              <CommentSection
+                bugId={bug._id}
+                canUpload={true}
+              />
+            </div>
+          )}
+        </section>
+
+        <Divider />
+
+        <section>
+          <button
+            type="button"
+            onClick={() => setIsActivityOpen((prev) => !prev)}
+            className="w-full flex items-center justify-between rounded-xl border border-border bg-background-secondary/40 px-3 py-2.5 text-left transition-colors hover:bg-background-secondary/80"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background-secondary">
+                <Clock className="h-4 w-4 text-content-muted" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-content-primary leading-none">Activity Timeline</p>
+                <p className="mt-1 text-xs text-content-muted">Recent updates for this bug.</p>
+              </div>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-content-muted transition-transform duration-200 ${isActivityOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isActivityOpen && (
+            <div className="mt-3">
+              <ActivityTimeline bugId={bug._id} />
+            </div>
+          )}
+        </section>
+
+        <Divider />
+
+        {/* ── AI Suggestions ───────────────────────────────────────── */}
+        <section className="space-y-3">
+          <SectionHeader
+            icon={Sparkles}
+            title="AI Suggestions"
+            description="Let AI help diagnose this bug."
+            iconClass="text-violet-400"
+          />
+
+          <button
+            disabled={loadingAI}
+            onClick={getAISolution}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
+              bg-violet-500/15 border border-violet-500/25 hover:bg-violet-500/25
+              text-violet-300 text-sm font-medium transition-colors disabled:opacity-60"
+          >
+            <Sparkles className="w-4 h-4" />
+            {loadingAI ? "Thinking…" : "Get AI Suggestions"}
+          </button>
+
+          {formatted && showAI && (
+            <div className="rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-4 space-y-3">
+              <p className="text-xs font-semibold text-violet-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> AI Suggestion
+              </p>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-400 mb-1">Cause</p>
+                <p className="text-sm text-content-secondary leading-relaxed">{formatted.cause}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400 mb-1">Fix</p>
+                <ul className="space-y-1 text-sm text-content-secondary list-disc ml-4">
+                  {formatted.fixes.map((f, i) => <li key={i}>{f}</li>)}
+                </ul>
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* ── Assignment control ───────────────────────────────────── */}
         {canChangeAssignment && (
           <>
@@ -187,19 +347,13 @@ export function BugDetailPanel({
                 <UserCog className="w-3.5 h-3.5 text-content-muted" />
                 <SectionLabel>Assign To</SectionLabel>
               </div>
-              <PanelSelect
-                label="Assign To"
-                value={assignedUser}
-                onChange={(e) => setAssignedUser(e.target.value)}
-              >
+              <PanelSelect value={assignedUser} onChange={(e) => setAssignedUser(e.target.value)}>
                 <option value="">Unassigned</option>
                 {teamMembers?.map((m) => (
                   <option key={m._id} value={m._id}>{m.username}</option>
                 ))}
               </PanelSelect>
-              <PrimaryButton onClick={handleUpdateAssignment}>
-                Save Assignment
-              </PrimaryButton>
+              <PrimaryButton onClick={handleUpdateAssignment}>Save Assignment</PrimaryButton>
             </section>
           </>
         )}
@@ -213,18 +367,12 @@ export function BugDetailPanel({
                 <RefreshCw className="w-3.5 h-3.5 text-content-muted" />
                 <SectionLabel>Update Status</SectionLabel>
               </div>
-              <PanelSelect
-                label="Update Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
+              <PanelSelect value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option>Open</option>
                 <option>In Progress</option>
                 <option>Fixed</option>
               </PanelSelect>
-              <PrimaryButton onClick={handleUpdateStatus}>
-                Save Status
-              </PrimaryButton>
+              <PrimaryButton onClick={handleUpdateStatus}>Save Status</PrimaryButton>
             </section>
           </>
         )}
@@ -256,71 +404,6 @@ export function BugDetailPanel({
             </section>
           </>
         )}
-
-        {/* ── AI Suggestions ───────────────────────────────────────── */}
-        <Divider />
-        <section className="space-y-3">
-          <button
-            disabled={loadingAI}
-            onClick={getAISolution}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
-              bg-violet-500/15 border border-violet-500/25 hover:bg-violet-500/25
-              text-violet-300 text-sm font-medium transition-colors disabled:opacity-60"
-          >
-            <Sparkles className="w-4 h-4" />
-            {loadingAI ? "Thinking…" : "Get AI Suggestions"}
-          </button>
-
-          {formatted && showAI && (
-            <div className="rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-4 space-y-3">
-              <p className="text-xs font-semibold text-violet-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> AI Suggestion
-              </p>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-400 mb-1">Cause</p>
-                <p className="text-sm text-content-secondary leading-relaxed">{formatted.cause}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400 mb-1">Fix</p>
-                <ul className="space-y-1 text-sm text-content-secondary list-disc ml-4">
-                  {formatted.fixes.map((f, i) => <li key={i}>{f}</li>)}
-                </ul>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ── Comments ─────────────────────────────────────────────── */}
-        <Divider />
-        <section className="space-y-3">
-          <CollapseToggle
-            icon={MessageSquare}
-            label="Comments"
-            isOpen={showComments}
-            onToggle={handleToggleComments}
-          />
-          {showComments && (
-            <div ref={commentRef}>
-              <CommentSection bugId={bug._id} />
-            </div>
-          )}
-        </section>
-
-        {/* ── Activity Timeline ────────────────────────────────────── */}
-        <Divider />
-        <section className="space-y-3">
-          <CollapseToggle
-            icon={Clock}
-            label="Activity"
-            isOpen={showTimeline}
-            onToggle={() => setShowTimeline((p) => !p)}
-          />
-          {showTimeline && (
-            <div className="max-h-64 overflow-y-auto rounded-xl border border-border bg-background-secondary/30 px-3 py-3">
-              <ActivityTimeline bugId={bug._id} />
-            </div>
-          )}
-        </section>
 
         {/* ── Danger zone ──────────────────────────────────────────── */}
         {isBugCreator && (

@@ -1,16 +1,15 @@
 import express from "express";
 import { createBug, deleteBug, getBugs, getMyBugs, getTeamBugs, updateBug } from "../controllers/bug.controller.js";
 import protect from "../middlewares/auth.middleware.js";
-import attachmentRouter from "./attachment.route.js";
+import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
-router.post("/",protect, createBug);
+router.post("/", protect, upload.array("screenshots", 5), createBug);
 router.get("/", protect, getBugs);
 router.get("/my", protect, getMyBugs);
 router.put("/:id",protect, updateBug);
 router.delete("/:id",protect, deleteBug);
 router.get("/team", protect, getTeamBugs);
-router.use("/:id/attachments", attachmentRouter);
 
 export default router;

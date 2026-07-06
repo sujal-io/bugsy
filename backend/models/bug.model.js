@@ -1,32 +1,27 @@
 import mongoose from "mongoose";
 
-const attachmentSchema = new mongoose.Schema(
+const screenshotSchema = new mongoose.Schema(
   {
     filename: {
       type: String,
       required: true,
     },
-    // Full Cloudinary URL used to display or download the file
     url: {
       type: String,
       required: true,
     },
-    // Cloudinary public_id — required to delete the file from Cloudinary later
     publicId: {
       type: String,
       required: true,
     },
-    // MIME type stored so the frontend knows how to render the file
     mimetype: {
       type: String,
       required: true,
     },
-    
     size: {
       type: Number,
       required: true,
     },
-    
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -101,12 +96,12 @@ const bugSchema = new mongoose.Schema(
       default: "",
     },
 
-    attachments: {
-      type: [attachmentSchema],
+    screenshots: {
+      type: [screenshotSchema],
       default: [],
       validate: {
         validator: (arr) => arr.length <= 5,
-        message: "A bug cannot have more than 5 attachments",
+        message: "A bug cannot have more than 5 screenshots",
       },
     },
   },
