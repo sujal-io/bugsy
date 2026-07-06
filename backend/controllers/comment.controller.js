@@ -7,13 +7,26 @@ export const addComment = async (req, res) => {
   try {
     const { bugId, text } = req.body;
 
+    // Build attachment array from multer + Cloudinary
+    const attachments = (req.files || []).map((file) => ({
+      filename: file.originalname,
+      url: file.path,
+      publicId: file.filename,
+      mimetype: file.mimetype,
+      size: file.size,
+      uploadedBy: req.user.id,
+    }));
+
     const comment = await Comment.create({
       bug: bugId,
       user: req.user.id,
-      text,
+      text: text || "",
+      attachments,
     });
 
-    const populated = await comment.populate("user", "username");
+    const populated = await Comment.findById(comment._id)
+      .populate("user", "username")
+      .populate("attachments.uploadedBy", "username");
 
     // Log activity
     await logActivity(bugId, req.user.id, "commented on bug");
@@ -21,16 +34,15 @@ export const addComment = async (req, res) => {
     // Get bug to access team
     const bug = await Bug.findById(bugId);
 
-    // Realtime emit
+    // Emit the complete comment (including attachments)
     io.to(bug.team.toString()).emit("commentAdded", populated);
-
 
     res.json(populated);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error adding comment" });
   }
 };
-
 // Get comments
 export const getComments = async (req, res) => {
   try {
@@ -38,6 +50,7 @@ export const getComments = async (req, res) => {
 
     const comments = await Comment.find({ bug: bugId })
       .populate("user", "username")
+      .populate("attachments.uploadedBy", "username")
       .sort({ createdAt: -1 });
 
     res.json(comments);

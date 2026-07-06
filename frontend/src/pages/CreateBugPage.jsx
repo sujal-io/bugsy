@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bug } from "lucide-react";
+import { ArrowLeft, Bug, ImagePlus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
@@ -19,25 +19,33 @@ function CreateBugPage() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
   const [assignedTo, setAssignedTo] = useState("");
+  const [screenshots, setScreenshots] = useState([]);
+  const [screenshotPreviews, setScreenshotPreviews] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [team, setTeam] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Socket and team setup
   useEffect(() => {
-    if (!hasTeam) return;
+  if (!hasTeam || !user?.team) return;
 
-    socket.connect();
-    socket.on("connect", () => {
-      if (user?.team) {
-        socket.emit("joinTeam", user.team);
-      }
-    });
+  const handleConnect = () => {
+    socket.emit("joinTeam", user.team);
+  };
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [user?.team, hasTeam]);
+  socket.connect();
+
+  if (socket.connected) {
+    handleConnect();
+  } else {
+    socket.on("connect", handleConnect);
+  }
+
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.disconnect();
+  };
+}, [hasTeam, user?.team]);
 
   // Fetch team
   useEffect(() => {
@@ -65,6 +73,41 @@ function CreateBugPage() {
     window.location.href = "/login";
   };
 
+  const handleScreenshotSelection = (e) => {
+    const files = Array.from(e.target.files || []);
+    const validImages = files.filter((file) => file.type.startsWith("image/"));
+
+    if (validImages.length === 0) {
+      toast.error("Please select image files only");
+      return;
+    }
+
+    if (screenshots.length + validImages.length > 5) {
+      toast.error("You can upload up to 5 screenshots");
+      return;
+    }
+
+    const previews = validImages.map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+      name: file.name,
+    }));
+
+    setScreenshots((prev) => [...prev, ...validImages]);
+    setScreenshotPreviews((prev) => [...prev, ...previews]);
+    e.target.value = "";
+  };
+
+  const handleRemoveScreenshot = (index) => {
+    const preview = screenshotPreviews[index];
+    if (preview?.previewUrl) {
+      URL.revokeObjectURL(preview.previewUrl);
+    }
+
+    setScreenshots((prev) => prev.filter((_, i) => i !== index));
+    setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,14 +119,16 @@ function CreateBugPage() {
 
     try {
       setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("description", description.trim());
+      formData.append("priority", priority);
+      if (assignedTo) formData.append("assignedTo", assignedTo);
+      screenshots.forEach((file) => formData.append("screenshots", file));
+
       await apiRequest("/api/bugs", {
         method: "POST",
-        body: {
-          title: title.trim(),
-          description: description.trim(),
-          priority,
-          assignedTo: assignedTo || undefined,
-        },
+        body: formData,
       });
 
       toast.success("Bug created successfully!");
@@ -91,6 +136,11 @@ function CreateBugPage() {
       setDescription("");
       setPriority("Low");
       setAssignedTo("");
+      setScreenshots([]);
+      screenshotPreviews.forEach((preview) => {
+        if (preview.previewUrl) URL.revokeObjectURL(preview.previewUrl);
+      });
+      setScreenshotPreviews([]);
 
       // Navigate back to overview after brief delay
       setTimeout(() => {
@@ -226,6 +276,57 @@ function CreateBugPage() {
                 <p className="text-xs text-content-muted mt-1.5">
                   Include as much detail as possible to help with debugging
                 </p>
+              </div>
+
+              {/* Screenshots section */}
+              <div className="rounded-2xl border border-border bg-background-secondary/40 p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-content-primary">
+                      Screenshots (Optional)
+                    </label>
+                    <p className="mt-1 text-xs text-content-muted">
+                      PNG, JPG, or JPEG • up to 5 images • 10 MB each
+                    </p>
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-content-primary transition-colors hover:bg-surface-hover">
+                    <ImagePlus className="h-4 w-4" />
+                    Add Images
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleScreenshotSelection}
+                      disabled={isSubmitting || screenshots.length >= 5}
+                    />
+                  </label>
+                </div>
+
+                {screenshotPreviews.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {screenshotPreviews.map((preview, index) => (
+                      <div key={`${preview.name}-${index}`} className="group relative overflow-hidden rounded-xl border border-border bg-surface">
+                        <img
+                          src={preview.previewUrl}
+                          alt={preview.name}
+                          className="h-24 w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveScreenshot(index)}
+                          className="absolute right-2 top-2 rounded-full bg-black/70 p-1 text-white transition-opacity hover:bg-black/80"
+                          aria-label={`Remove ${preview.name}`}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                        <p className="truncate px-2 py-1.5 text-[11px] text-content-muted">
+                          {preview.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Priority and Assignment row */}

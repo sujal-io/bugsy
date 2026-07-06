@@ -1,5 +1,36 @@
 import mongoose from "mongoose";
 
+const screenshotSchema = new mongoose.Schema(
+  {
+    filename: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+    publicId: {
+      type: String,
+      required: true,
+    },
+    mimetype: {
+      type: String,
+      required: true,
+    },
+    size: {
+      type: Number,
+      required: true,
+    },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  { _id: true, timestamps: true }
+);
+
 const bugSchema = new mongoose.Schema(
   {
     title: {
@@ -63,6 +94,15 @@ const bugSchema = new mongoose.Schema(
     solution: {
       type: String,
       default: "",
+    },
+
+    screenshots: {
+      type: [screenshotSchema],
+      default: [],
+      validate: {
+        validator: (arr) => arr.length <= 5,
+        message: "A bug cannot have more than 5 screenshots",
+      },
     },
   },
   { timestamps: true },

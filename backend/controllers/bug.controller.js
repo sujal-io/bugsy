@@ -7,6 +7,14 @@ import { io } from "../server.js";
 export const createBug = async (req, res, next) => {
   try {
     const { title, description, steps, expected, actual, priority, assignedTo } = req.body;
+    const screenshots = (req.files || []).map((file) => ({
+      filename: file.originalname,
+      url: file.path,
+      publicId: file.filename,
+      mimetype: file.mimetype,
+      size: file.size,
+      uploadedBy: req.user.id,
+    }));
 
     const user = await User.findById(req.user.id);
 
@@ -40,6 +48,7 @@ export const createBug = async (req, res, next) => {
       user: req.user.id,
       team: user.team,
       assignedTo: assignedTo || null,
+      screenshots,
     });
 
     // Log activity
@@ -50,9 +59,14 @@ export const createBug = async (req, res, next) => {
       await logActivity(bug._id, req.user.id, "assigned bug", `Assigned to ${(await User.findById(assignedTo)).username}`);
     }
 
-    io.to(user.team.toString()).emit("bugCreated", bug);
+    const populatedBug = await Bug.findById(bug._id)
+      .populate("user", "username email")
+      .populate("assignedTo", "username email")
+      .populate("screenshots.uploadedBy", "username email");
 
-    res.status(201).json(bug);
+    io.to(user.team.toString()).emit("bugCreated", populatedBug);
+
+    res.status(201).json(populatedBug);
   } catch (error) {
     next(error);
   }

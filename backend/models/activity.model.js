@@ -23,6 +23,8 @@ const activitySchema = new mongoose.Schema(
         "added solution",
         "commented on bug",
         "edited bug",
+        "uploaded attachment",
+        "deleted attachment",
       ],
       required: true,
     },

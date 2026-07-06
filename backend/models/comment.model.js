@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const attachmentSchema = new mongoose.Schema(
+  {
+    filename: String,
+    url: String,
+    publicId: String,
+    mimetype: String,
+    size: Number,
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { _id: true },
+);
+
 const commentSchema = new mongoose.Schema(
   {
     bug: {
@@ -14,10 +29,15 @@ const commentSchema = new mongoose.Schema(
     },
     text: {
       type: String,
-      required: true,
+      default: "",
+      trim: true,
+    },
+    attachments: {
+      type: [attachmentSchema],
+      default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Comment", commentSchema);

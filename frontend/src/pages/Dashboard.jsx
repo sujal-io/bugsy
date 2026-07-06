@@ -140,24 +140,29 @@ function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
   const hasTeam = Boolean(user?.team);
   const bugsSectionRef = useRef(null);
+useEffect(() => {
+  if (!user?.team) return;
 
-  useEffect(() => {
-    socket.connect();
+  const handleConnect = () => {
+    console.log("CONNECTED:", socket.id);
+    socket.emit("joinTeam", user.team);
+    console.log("Joined room:", user.team);
+  };
 
-    socket.on("connect", () => {
-      console.log("CONNECTED:", socket.id);
+  socket.connect();
 
-      if (user?.team) {
-        socket.emit("joinTeam", user.team);
+  if (socket.connected) {
+    handleConnect();
+  } else {
+    socket.off("connect", handleConnect);
+    socket.on("connect", handleConnect);
+  }
 
-        console.log("Joined room:", user.team);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [user?.team]);
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.disconnect();
+  };
+}, [user?.team]);
 
   useEffect(() => {
     socket.on("bugCreated", (newBug) => {

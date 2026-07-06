@@ -5,7 +5,7 @@ import { MessageSquare } from "lucide-react";
 import { CommentCard } from "./CommentCard";
 import { CommentInput } from "./CommentInput";
 
-// Loading skeleton.
+// ── Loading skeleton ───────────────────────────────────────────────────────
 function CommentSkeleton() {
   return (
     <div className="space-y-3">
@@ -22,27 +22,35 @@ function CommentSkeleton() {
   );
 }
 
-// Empty state.
+// ── Empty state ────────────────────────────────────────────────────────────
 function CommentsEmpty() {
   return (
     <div className="flex flex-col items-center gap-2 py-6 text-center">
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-border/40">
         <MessageSquare className="h-4 w-4 text-content-muted" />
       </div>
-      <p className="text-sm font-medium text-content-primary">No comments yet</p>
-      <p className="text-xs text-content-muted">Be the first to leave a comment.</p>
+      <p className="text-sm font-medium text-content-primary">
+        No comments yet
+      </p>
+      <p className="text-xs text-content-muted">
+        Be the first to leave a comment.
+      </p>
     </div>
   );
 }
 
-// Main component.
-function CommentSection({ bugId }) {
+// ── Main component ─────────────────────────────────────────────────────────
+// bugId      — MongoDB _id of the bug
+// canUpload  — whether the current user is a team member (may attach files)
+function CommentSection({ bugId, canUpload = true }) {
   const [comments, setComments] = useState([]);
-  const [text, setText]         = useState("");
-  const [loading, setLoading]   = useState(true);
+  const [text, setText] = useState("");
+  const [stagedFiles, setStagedFiles] = useState([]); // File[] not yet uploaded
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const toast = useToast();
 
-  // ── Fetch ──────────────────────────────────────────────────────────────
+  // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -55,9 +63,11 @@ function CommentSection({ bugId }) {
     }
   };
 
-  useEffect(() => { fetchComments(); }, [bugId]);
+  useEffect(() => {
+    fetchComments();
+  }, [bugId]);
 
-  // ── Realtime ───────────────────────────────────────────────────────────
+  // ── Realtime ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const handleRealtimeComment = (event) => {
       const newComment = event.detail;
@@ -66,44 +76,93 @@ function CommentSection({ bugId }) {
       }
     };
     window.addEventListener("new-comment", handleRealtimeComment);
-    return () => window.removeEventListener("new-comment", handleRealtimeComment);
+    return () =>
+      window.removeEventListener("new-comment", handleRealtimeComment);
   }, [bugId]);
 
-  // ── Add comment ────────────────────────────────────────────────────────
-  const handleAdd = async () => {
-    if (!text.trim()) return;
+  // ── Staged file helpers ───────────────────────────────────────────────────
+  const handleAddFiles = (newFiles) => {
+    setStagedFiles((prev) => {
+      const combined = [...prev, ...newFiles];
+      return combined.slice(0, 20); // never exceed 20
+    });
+  };
+
+  const handleRemoveFile = (index) => {
+    setStagedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ── Send comment (+ optional attachments) ────────────────────────────────
+  const handleSend = async () => {
+    const hasText = text.trim().length > 0;
+    const hasFiles = stagedFiles.length > 0;
+    if (!hasText && !hasFiles) return;
+
+    setSending(true);
     try {
+      
+      // Send comment + attachments in ONE request
+      const formData = new FormData();
+
+      formData.append("bugId", bugId);
+      formData.append("text", text.trim());
+
+      for (const file of stagedFiles) {
+        formData.append("attachments", file);
+      }
+
       const newComment = await apiRequest("/api/comments", {
         method: "POST",
-        body: { bugId, text },
+        body: formData,
       });
-      setComments([newComment, ...comments]);
+
+      setComments((prev) => {
+        const index = prev.findIndex((c) => c._id === newComment._id);
+
+        if (index !== -1) {
+          const updated = [...prev];
+          updated[index] = newComment;
+          return updated;
+        }
+
+        return [...prev, newComment];
+      });
+      // 4. Clear inputs
       setText("");
-    } catch {
-      toast.error("Failed to add comment");
+      setStagedFiles([]);
+    } catch (err) {
+      toast.error(err?.message || "Failed to send");
+    } finally {
+      setSending(false);
     }
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* Input */}
-      <CommentInput
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onSubmit={handleAdd}
-      />
+      {/* Input — only shown when user is a team member */}
+      {canUpload && (
+        <CommentInput
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onSubmit={handleSend}
+          stagedFiles={stagedFiles}
+          onAddFiles={handleAddFiles}
+          onRemoveFile={handleRemoveFile}
+          disabled={sending}
+        />
+      )}
 
-      {/* List */}
+      {/* Comment list */}
       {loading ? (
         <CommentSkeleton />
       ) : comments.length === 0 ? (
         <CommentsEmpty />
       ) : (
         <div className="space-y-3">
-          {comments.map((c) => (
-            <CommentCard key={c._id} comment={c} />
-          ))}
+          {comments.map((c) => {
+            return <CommentCard key={c._id} comment={c} />;
+          })}
         </div>
       )}
     </div>
