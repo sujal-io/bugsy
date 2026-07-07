@@ -11,6 +11,9 @@ export default function OAuthSuccess() {
     const username = searchParams.get("username");
     const email = searchParams.get("email");
     const team = searchParams.get("team");
+    const avatar = searchParams.get("avatar");
+    const provider = searchParams.get("provider");
+    const createdAt = searchParams.get("createdAt");
 
     if (!token) {
       navigate("/login", { replace: true });
@@ -28,6 +31,9 @@ export default function OAuthSuccess() {
         username,
         email,
         team: team || null,
+        avatar: avatar || "",
+        provider,
+        createdAt,
       })
     );
 

@@ -22,7 +22,10 @@ export const googleCallback = (req, res, next) => {
         `&id=${user._id}` +
         `&username=${encodeURIComponent(user.username)}` +
         `&email=${encodeURIComponent(user.email)}` +
-        `&team=${user.team || ""}`,
+        `&team=${user.team || ""}` +
+        `&avatar=${encodeURIComponent(user.avatar || "")}` +
+        `&provider=${user.provider}` +
+        `&createdAt=${user.createdAt}`,
     );
   })(req, res, next);
 };

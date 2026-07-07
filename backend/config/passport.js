@@ -2,50 +2,55 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/user.model.js";
 
-console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
+// Only initialize Google Strategy if credentials are available
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails[0].value;
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails[0].value;
 
-        let user = await User.findOne({ email });
+          let user = await User.findOne({ email });
 
-        if (user) {
-          // Link Google account if not already linked
-          if (!user.googleId) {
-            user.googleId = profile.id;
-            user.provider = "google";
-            user.avatar = profile.photos?.[0]?.value || user.avatar;
-            await user.save();
+          if (user) {
+            // Link Google account if not already linked
+            if (!user.googleId) {
+              user.googleId = profile.id;
+              user.provider = "google";
+              user.avatar = profile.photos?.[0]?.value || user.avatar;
+              await user.save();
+            }
+
+            return done(null, user);
           }
 
-          return done(null, user);
+          // Create new user
+          user = await User.create({
+            username: profile.displayName.replace(/\s+/g, "").toLowerCase(),
+            email,
+            password: null,
+            provider: "google",
+            googleId: profile.id,
+            avatar: profile.photos?.[0]?.value || "",
+          });
+
+          done(null, user);
+        } catch (err) {
+          done(err, null);
         }
-
-        // Create new user
-        user = await User.create({
-          username: profile.displayName.replace(/\s+/g, "").toLowerCase(),
-          email,
-          password: null,
-          provider: "google",
-          googleId: profile.id,
-          avatar: profile.photos?.[0]?.value || "",
-        });
-
-        done(null, user);
-      } catch (err) {
-        done(err, null);
       }
-    }
-  )
-);
+    )
+  );
+} else {
+  console.log("Google OAuth not configured - skipping Google strategy");
+}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
