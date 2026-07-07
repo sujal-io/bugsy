@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../components/common/ToastProvider.jsx";
-import { apiRequest } from "../lib/apiClient";
+import { apiRequest, getApiBaseUrl } from "../lib/apiClient";
 import bugsyLogo from "/bugsy logo.png";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 
 import { ArrowRight, Code, Zap } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -43,7 +44,7 @@ function Login() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 lg:px-12 py-6 lg:py-8 overflow-hidden">
+    <div className="relative h-screen bg-background flex items-center justify-center px-4 sm:px-6 lg:px-12 overflow-hidden">
       {/* Background */}
 
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-background-secondary/50 pointer-events-none" />
@@ -142,8 +143,26 @@ function Login() {
               <div className="w-full border-t border-border" />
             </div>
 
+            <div className="relative flex justify-center">
+              <span className="bg-surface px-3 text-xs uppercase tracking-wider text-content-muted">
+                OR
+              </span>
+            </div>
           </div>
+          {/* Social */}
 
+          <div className="flex justify-center">
+            <Button
+              onClick={() => {
+                window.location.href = `${getApiBaseUrl()}/api/oauth/google`;
+              }}
+              variant="secondary"
+              className="w-full max-w-xs flex items-center justify-center gap-3 py-3 font-medium"
+            >
+              <FcGoogle className="text-xl" />
+              Continue with Google
+            </Button>
+          </div>
         </div>
 
         {/* Bottom Link */}

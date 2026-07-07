@@ -37,12 +37,6 @@ googleId: {
   type: String,
   default: null,
 },
-
-githubId: {
-  type: String,
-  default: null,
-},
-
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Team",

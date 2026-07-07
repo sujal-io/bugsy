@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import bugRoutes from "./routes/bug.route.js";
 import authRoutes from "./routes/auth.route.js";
+import oauthRoutes from "./routes/oauth.route.js";
+import session from "express-session";
+import passport from "passport";
+import "./config/passport.js";
 import teamRoutes from "./routes/team.route.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import aiRoutes from "./routes/ai.route.js";
@@ -47,7 +51,16 @@ app.use(cors({
   origin: "*",
 }));
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
+app.use(passport.initialize());
+app.use(passport.session());
 app.get("/", (req, res) => {
   res.send("Bugsy API is running 🚀");
 });
@@ -56,9 +69,11 @@ app.get("/", (req, res) => {
 // routes
 app.use("/api/bugs", bugRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/oauth", oauthRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/comments", commentRoutes);
+
 app.use("/api/activity", activityRoutes);
 
 // error middleware (always last)

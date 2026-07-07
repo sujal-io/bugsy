@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CreateBugPage from "./pages/CreateBugPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import OAuthSuccess from "./pages/OAuthSuccess";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <Route path="/" element={<LandingPage />} /> 
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
-
+      <Route path="/oauth-success" element={<OAuthSuccess />} />
       {/* Protected dashboard route */}
       <Route
         path="/dashboard"
