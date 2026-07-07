@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import generateToken from "../utils/generateToken.js";
 
 export const registerUser = async (req, res, next) => {
   try {
@@ -48,11 +49,7 @@ export const loginUser = async (req, res, next) => {
     }
 
     // generate token
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = generateToken(user._id);
 
     res.status(200).json({
       message: "Login successful",
@@ -71,4 +68,20 @@ export const loginUser = async (req, res, next) => {
 
 export const logoutUser = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
+};
+
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate("team", "name inviteCode");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
 };

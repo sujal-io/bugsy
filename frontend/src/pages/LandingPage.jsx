@@ -13,12 +13,15 @@ import {
   Bot,
   Code,
 } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 import { Button } from "../components/ui/Button";
 import bugsyLogo from "/bugsy logo.png";
+import { getApiBaseUrl } from "../lib/apiClient";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  console.log(import.meta.env);
 
   const features = [
     {
@@ -251,15 +254,17 @@ const LandingPage = () => {
 
               {/* Social */}
 
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="secondary" className="py-2.5 font-medium">
-                  <Code className="mr-2 w-4 h-4" />
-                  GitHub
-                </Button>
-
-                <Button variant="secondary" className="py-2.5 font-medium">
-                  <Zap className="mr-2 w-4 h-4" />
-                  Google
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => {
+                    window.location.href =
+                      `${getApiBaseUrl()}/api/oauth/google`;
+                  }}
+                  variant="secondary"
+                  className="w-full max-w-xs flex items-center justify-center gap-3 py-3 font-medium"
+                >
+                  <FcGoogle className="text-xl" />
+                  Continue with Google
                 </Button>
               </div>
 
