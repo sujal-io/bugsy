@@ -12,13 +12,24 @@ const ALLOWED_MIME_TYPES = {
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const MAX_FILES_PER_BUG = 20;
 
-// Store images in Cloudinary
-const storage = new CloudinaryStorage({
+// Store attachments in Cloudinary
+const attachmentStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: "bugsy/attachments",
     resource_type: "image",
     public_id: `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`,
+  }),
+});
+
+// Store avatars in Cloudinary
+const avatarStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "bugsy/avatars",
+    resource_type: "image",
+    public_id: `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`,
+    transformation: [{ width: 400, height: 400, crop: "fill" }],
   }),
 });
 
@@ -37,7 +48,7 @@ function fileFilter(req, file, cb) {
 }
 
 const upload = multer({
-  storage,
+  storage: attachmentStorage,
   fileFilter,
   limits: {
     fileSize: MAX_FILE_SIZE_BYTES,
@@ -45,4 +56,14 @@ const upload = multer({
   },
 });
 
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  fileFilter,
+  limits: {
+    fileSize: MAX_FILE_SIZE_BYTES,
+    files: 1,
+  },
+});
+
 export default upload;
+export { uploadAvatar };

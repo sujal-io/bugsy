@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Bug,
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  User,
 } from 'lucide-react';
 import bugsyLogo from '/bugsy logo.png';
 
@@ -121,17 +122,35 @@ function Sidebar({
                 </button>
               );
             })}
+            
+            {/* Profile Link */}
+            <Link
+              to="/profile"
+              onClick={() => isMobile && setIsMobileOpen(false)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-content-secondary hover:text-content-primary hover:bg-white/[0.04]"
+            >
+              <User className="w-5 h-5 shrink-0" />
+              {!isCollapsed && <span className="font-medium text-sm truncate">Profile</span>}
+            </Link>
           </nav>
 
           <div className="p-3 border-t border-border">
             {!isCollapsed ? (
               <div className="relative p-3 rounded-xl bg-background-secondary/50">
                 <div className="flex items-center gap-3 min-w-0 pr-10">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-semibold text-primary">
-                      {user?.username?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
+                  {user?.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user?.username}
+                      className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-border"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-semibold text-primary">
+                        {user?.username?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-content-primary truncate">
                       {user?.username || 'User'}

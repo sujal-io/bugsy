@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CreateBugPage from "./pages/CreateBugPage";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import OAuthSuccess from "./pages/OAuthSuccess";
 
@@ -31,6 +32,16 @@ function App() {
         element={
           <ProtectedRoute>
             <CreateBugPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected profile route */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
