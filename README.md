@@ -105,12 +105,12 @@ VITE_API_BASE_URL=
 ## Screenshots
 
 <!-- TODO: replace with actual screenshots, see instructions below -->
-![Landing page](.//frontend/public/landing page.png)
+![Landing page](.//frontend/public/landing%20page.png)
 ![Dashboard](.//frontend/public/dashboard.png)
-![Discussion](.//frontend/public/discussion section.png)
+![Discussion](.//frontend/public/discussion%20section.png)
+![Team page](.//frontend/public/team%20page.png)
+![Bug Details](.//frontend/public/bug%20details.png)
 ![AI suggestions](.//frontend/public/ai.png)
-![Team page](.//frontend/public/team page.png)
-![Bug Details](.//frontend/public/bug details.png)
 
 ## Demo
 
